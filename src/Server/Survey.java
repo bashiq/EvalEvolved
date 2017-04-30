@@ -44,12 +44,10 @@ public class Survey
      * @param stats relative file path of statsFile as a string
      * @param completion completion status as an int
      */
-    public Survey(int sid, int cid, String fileName, String stats, int completion)
+    public Survey(int sid, int cid, String stats, int completion)
     {
         this.setSID(sid);
         this.setCID(cid);
-        this.setFileName(fileName);
-        this.setCourse(course);
         this.setStatFile(stats);
         this.setCompleted(completion);
     }
