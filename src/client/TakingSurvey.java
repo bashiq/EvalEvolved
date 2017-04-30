@@ -1,16 +1,16 @@
 package client;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.GridLayout;
-import java.awt.List;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import javax.json.Json;
+import javax.json.JsonArrayBuilder;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 
 import javax.swing.*;
 
@@ -250,13 +250,33 @@ public class TakingSurvey extends JFrame {
         }
         
         void SubmitEval(){
-        	for(int i =0; i < savedAnswers.length; i++)
-        		if(savedAnswers[i] == null){
-        			JOptionPane.showMessageDialog (null, "Question "+ (i+1) + " has not been answered.",
-            				"Yeah Ok", JOptionPane.WARNING_MESSAGE);
-        			return;
-        		}
-        }
+            for(int i =0; i < savedAnswers.length; i++)
+        	if(savedAnswers[i] == null){
+                    JOptionPane.showMessageDialog (null, "Question "+ (i+1) + " has not been answered.",
+            		"Yeah Ok", JOptionPane.WARNING_MESSAGE);
+                    return;
+        	}
+            //DataOutputStream out = new DataOutputStream(sock.getOutputStream());
+            //creating json object
+            JsonObjectBuilder ultimateBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder questionBuilder = Json.createObjectBuilder();
+            JsonArrayBuilder questionArrayBuilder = Json.createArrayBuilder();
+
+            for (int i = 0; i < questions.length; i++) {
+                questionBuilder.add(questions[i].getQuestion(),savedAnswers[i])
+                    .add("button", questions[i].getButtonType());
+            JsonObject jo = questionBuilder.build();
+            questionArrayBuilder.add(jo);
+            }
+            
+           // JsonArray jsonarr = loanArrayBuilder.build();
+            ultimateBuilder.add("PH202D01", questionArrayBuilder);
+            JsonObject ultimateOb = ultimateBuilder.build();
+           // out.flush();
+            //out.writeUTF(LoanJsonObject.toString());//sending it
+            System.out.println(ultimateOb.toString());
+            System.out.println("sent");
+    }
     }
     
     
