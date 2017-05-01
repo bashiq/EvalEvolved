@@ -4,36 +4,43 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 
-public class StudentSurveyView extends JFrame{
+public class StudentSurveyView extends JPanel{
 	private JList availible, completed;
 	private JButton next;
 	private String[] str = {"Dummy Data", "D2"};//actual data from serever will go here
-	private String chosenSurvey;
-	
-	StudentSurveyView(){
-		
+	private String chosenSurvey, results;
+	private JsonCommunication jcom;
+        private int stuID, courseID;
+        
+        
+	StudentSurveyView(JsonCommunication jcom){
+		this.jcom = jcom;
 		DisplayElements();
 		
 	}
 	private void DisplayElements(){
-		this.add(new JLabel("Student Survey List"), BorderLayout.NORTH, JLabel.CENTER);
+            this.setLayout(new BorderLayout());
+		this.add(new JLabel("Student Survey List",SwingConstants.CENTER), BorderLayout.NORTH, JLabel.CENTER);
 		JPanel main = new JPanel ();
 		main.setLayout(new GridLayout(5,1));
 		
 		//information recieved from server will be displayed here
 		//possibly blah.getStudentcompleted surveys and uncompleted as string arr
-		main.add(new JLabel("Availible surveys"));
+		main.add(new JLabel("Availible surveys", SwingConstants.CENTER));
 		availible = new JList(str);
 		availible.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		availible.setFixedCellWidth(250);
@@ -45,8 +52,9 @@ public class StudentSurveyView extends JFrame{
 		
 		main.add(advancer);
 		
-		main.add(new JLabel("Submitted Surveys"));
+		main.add(new JLabel("Submitted Surveys", SwingConstants.CENTER));
 		completed = new JList(str);
+                completed.setEnabled(false);
 		main.add(completed);
 		
 		this.add(main, BorderLayout.CENTER);
@@ -58,18 +66,9 @@ public class StudentSurveyView extends JFrame{
         availible.addListSelectionListener(listener);
 		
 	}
-
-	public static void main(String[] args) {
-		StudentSurveyView window = new StudentSurveyView();
-		window.setTitle("Student Survey View");
-		window.setResizable(false);
-        window.setSize(1100, 900);
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
+        
 	
-	 /**
+     /**
      * The listener for receiving action events. When the action event occurs,
      * that object's actionPerformed method is invoked.
      */
@@ -82,24 +81,46 @@ public class StudentSurveyView extends JFrame{
          */
         @Override
         public void actionPerformed(ActionEvent ae) {
-        	//if(chosenSurvey.equals(null))//do nothing
-        		//return;
+            
+            //if(chosenSurvey.equals(null))//do nothing
+            //return;
         	
-        	//magic happens here
-        		System.out.println(chosenSurvey);
-        		Tester();
-        		
+            //magic happens here
+            System.out.println(chosenSurvey);
+            PopUpSurvey();
+            
         }
     }
     
-    public void  Tester (){ 
-    	this.getContentPane().removeAll();//this will clear frame
-    	this.getContentPane().revalidate();
-    	this.getContentPane().repaint();
-    	
-		this.add(new JLabel("Hello"), BorderLayout.CENTER);
-    	
-    	
+    public void  PopUpSurvey (){ 
+        //this.removeAll();
+        //this.revalidate();
+        //this.repaint();
+  
+        TakingSurvey taksur = new TakingSurvey();
+        taksur.setVisible(true);
+        
+        taksur.submit.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent ae) {
+            
+            if(taksur.IsAllQ()){
+                try {
+                    jcom.StoreStuEvalResults(taksur.toJsonForm(stuID, courseID));
+                } catch (IOException ex) {
+                    Logger.getLogger(StudentSurveyView.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                JOptionPane.showMessageDialog (null, "success or failure",
+            		"YEAH", JOptionPane.INFORMATION_MESSAGE);
+                //refreshwindow
+                
+            }
+        }   
+        });
+        
+    	//this.getContentPane().removeAll();//this will clear frame
+    	//this.getContentPane().revalidate();
+    	//this.getContentPane().repaint();
     }
     
     /**
