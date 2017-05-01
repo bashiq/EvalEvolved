@@ -10,6 +10,11 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.*;
 
+/**
+ * When a faculty member succesfully logs and choose which course stats they would like to view, this
+ * screen will pop up display stats
+ * @author Bilal
+ */
 public class CourseStatView extends JFrame {
 
     private JTextArea statArea;
@@ -19,6 +24,10 @@ public class CourseStatView extends JFrame {
     private GridBagConstraints c;
     private int rank = 1;
 
+    /**
+     * This constructor will recieve the faculty rank and show them the appriopriate screen from there
+     * @param inrank faculty rank
+     */
     public CourseStatView(int inrank) {
         rank = inrank;
         
@@ -59,6 +68,9 @@ public class CourseStatView extends JFrame {
         back.addActionListener(bh);
     }
 
+    /**
+     * The dean and department chair will be able to view stats for that course
+     */
     void DeanChairView() {
 
         JPanel statPanel = new JPanel(new BorderLayout());
@@ -84,8 +96,8 @@ public class CourseStatView extends JFrame {
         JPanel unsubPanel = new JPanel(new BorderLayout());
         unsubPanel.add(new JLabel("Students who have not completed Eval"), BorderLayout.NORTH);
 
-        unsubmitted = new JList(names);
-        unsubmitted.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        unsubmitted = new JList(names);//people who have not completed evals for this course
+        unsubmitted.setEnabled(false);
         JScrollPane scroll2 = new JScrollPane(unsubmitted);
         unsubPanel.add(scroll2, BorderLayout.CENTER);
         c.insets = new Insets(0, 60, 0, 0);  //top padding
@@ -95,11 +107,14 @@ public class CourseStatView extends JFrame {
         this.add(unsubPanel, c);
     }
 
+    /**
+     * professor will be limited in what stats they may view if can view any
+     */
     void ProfessorView() {
         c.gridx = 1;
         c.gridy = 1;
         //c.anchor = GridBagConstraints.CENTER;
-        this.add(new JLabel("21 out 25 have completed the eval for this course"), c);
+        this.add(new JLabel("As a professor you do not have permissions to view stats on courses"), c);
     }
     
     void DisposeWindow(){
@@ -109,8 +124,7 @@ public class CourseStatView extends JFrame {
     public class ButtonHandler implements ActionListener {
 
         /**
-         * Invoked when the button to submit information is pressed. will ask db
-         * for appropriate course stats was successful
+         * Invoked when the button to go back to facultycourselistview is pressed
          *
          * @param e in this case it wont do anything except allow program to
          * execute proper calls

@@ -15,18 +15,25 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import javax.json.JsonWriter;
 
-
+/**
+ * Class is used to communicate with server
+ * it is used to help keep seperation of gui and other stuff
+ * @author Bilal
+ */
 public class JsonCommunication
 {
     private Socket sock = null;
     private DataInputStream in = null;
     private DataOutputStream out= null;
-    private int rank = 0;////////////////////////////////////////////////////////////////////////////////////////////----
+    private int rank;////////////////////////////////////////////////////////////////////////////////////////////----
     private String serverMessage;
     private JsonReader jr = null;
     private JsonWriter jw= null;
-    private int userID;
+    private int userID=0;
     
+    /**
+     * constructor will establish first with server
+     */
     public JsonCommunication() {
         try {
             sock = new Socket("10.0.67.95", 5143);//10.0.67.95
@@ -41,8 +48,8 @@ public class JsonCommunication
     /**
      * Method will be used to login a user, server will send back id is proper and if they are already logged in
      * @param input user id
-     * @return 
-     * @throws IOException 
+     * @return arraylist of surveys to be further processed
+     * @throws IOException brought up in mainframe
      */
     public ArrayList<Survey> loginInfo(int input) throws IOException{
         
@@ -55,48 +62,46 @@ public class JsonCommunication
                 .add("data", databuild);
         
         JsonObject jo = loginBuild.build();
-//        Survey sd = new Survey(333,444,"yay", 2);
+//        Survey sd = new Survey(333,444,"yay", 2);//create temp survey objs
 //        sd.setCourse("pjo2");
 //        Survey sd4 = new Survey(333, 555, "yuk", 0);
 //        sd4.setCourse("yoyoma");
 //        s1.add(sd);
 //        s1.add(sd4);
-        System.out.println(jo);
+        //System.out.println(jo);
         
         jw.writeObject(jo);
         
         jr = Json.createReader(in);//reading in json string
         //System.out.println(jr);
         JsonObject jsonObject = jr.readObject();
-       // JsonObject survs = jr.readObject();
         //jr.close();
         boolean check = jsonObject.getBoolean("login");
-        
+        rank = jsonObject.getInt("rank");
         if(check)
         {
             JsonArray ja = jsonObject.getJsonArray("surveys");
               userID = input;
-              rank = jsonObject.getInt("rank");
+              
             
-            for(Object obj: ja.toArray())
+            for(Object obj: ja.toArray())//will take input from server and convert it to proper survey object
             {
                 JsonObject s = (JsonObject)obj;
                 s1.add(new Survey(s.getInt("SID"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
             }
-            System.out.println(s1.get(0));
+            System.out.println(s1.get(0).getSID());
         }
         else{
-            rank = -1;
             serverMessage = jsonObject.getString("message");
-            System.out.println(serverMessage);
+           // System.out.println(serverMessage);
         }
        return s1;
     }
     
     /**
      * Method will send student completed eval to server, will recieve confirmation if successful
-     * @param input
-     * @return 
+     * @param input json object created intaking survey
+     * @return arraylist
      */
     public ArrayList<Survey> StoreStuEvalResults(JsonObject input) throws IOException{
        ArrayList<Survey> out = null;
@@ -116,12 +121,17 @@ public class JsonCommunication
 //            }
         return out;
     }
-    
+    /**
+     * Method is used to get course stats
+     * @param input
+     * @return String or arraylist of survey objs
+     * @throws IOException called in facCourseList
+     */
     public String CourseStats(String input) throws IOException{
         JsonObjectBuilder loginBuild = Json.createObjectBuilder();
         loginBuild.add("method", "courseStatView")
                 .add("data", input)
-                .add("courseID", "Ph202");
+                .add("courseID", "Ph202");//fix
         
         JsonObject jo = loginBuild.build();
        // out.writeUTF(jo.toString());
@@ -129,22 +139,29 @@ public class JsonCommunication
         return "s1";
     }
     
+    /**
+     * Logg of function to properly close sockets and etc
+     * @throws IOException 
+     */
     public void LogOff() throws IOException{
         JsonObjectBuilder logOffBuild = Json.createObjectBuilder();
         JsonObjectBuilder databuild = Json.createObjectBuilder();
-        databuild.add("UID", this.getUserID());///////////////////////////////////////////////////////////////---
+       // databuild.add("UID", this.getUserID());///////////////////////////////////////////////////////////////---
         logOffBuild.add("method", "logOff");
                 //.add("data", databuild);
         
         JsonObject jo = logOffBuild.build();
-        if(jw != null){
-            jw.writeObject(jo);
+        System.out.println();
+        //jw.writeObject(jo);
+        if(userID != 0)//){jw != null){
+            
 //            jw.close();
 //            jr.close();
-//            in.close();
-//            out.close();
+            in.close();
+            out.close();
             sock.close();
-        }
+            System.out.println("here");
+      //  }
     }
 
     /**
@@ -166,27 +183,4 @@ public class JsonCommunication
     public int getUserID() {
         return userID;
     }
-    
-    
-    
-    //
-    void forKireh() throws IOException{//user login
-        String callMethod;
-        int userID;
-         JsonReader jr = Json.createReader(new StringReader(in.readUTF()));//reading in json string
-
-        JsonObject jsonObject = jr.readObject();
-        jr.close();
-        callMethod = jsonObject.getString("method");
-        userID =jsonObject.getInt("data");
-        ////////////////////////////////////////////////////////////////////////
-        
-        
-    }
-    
-    //public static void main(String[] args) throws IOException {
-      //  JsonCommunication j = new JsonCommunication ();
-     //j.loginInfo(3);   
-   //  j.forKireh();
-    //}
 }

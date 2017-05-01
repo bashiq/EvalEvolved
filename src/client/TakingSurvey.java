@@ -17,6 +17,12 @@ import javax.json.JsonObjectBuilder;
 
 import javax.swing.*;
 
+/**
+ * Class is gui for a student to take a survey
+ * Each question will displayed individaully
+ * once all questions are answered they may be submit it
+ * @author Bilal
+ */
 public class TakingSurvey extends JFrame {
 	JButton previous, next, submit;
 	private EvalQuestions [] questions = null;
@@ -27,8 +33,10 @@ public class TakingSurvey extends JFrame {
 	private int qCounter=0;
         private String toJsonString =null;
 
+        /**
+         * Constructor used initially JFRAme and display it
+         */
 	TakingSurvey (){
-            
             this.setTitle("Student Evaluation");
             //window.pack();
             this.setSize(1000, 500);
@@ -111,9 +119,9 @@ public class TakingSurvey extends JFrame {
         //and other numbers
 	}
 	
-	//need method to rretrive questions and type of answers
-	
-	
+	/**
+         * Method will display new question on to screen
+         */
 	private void NewQuestion(){
 		
 		userSelectedChoice.clear();
@@ -153,9 +161,6 @@ public class TakingSurvey extends JFrame {
 				qPanel.add((JRadioButton)jBoxes.get(i));
 			}
 		}
-		
-		//add all
-                
 		this.add(qPanel, BorderLayout.CENTER);
 	}
 	
@@ -209,13 +214,13 @@ public class TakingSurvey extends JFrame {
 		//qPanel.repaint(); dont need 
 	}
         
-        public String getEvalJson(){
-            //this.dispose();
-            return toJsonString;
-        }
         void DisposeWindow(){
             this.dispose();
         }
+        /**
+         * Checking to see if all questions are answered
+         * @return  true of false depending on state
+         */
         boolean IsAllQ(){
             savedAnswers[qCounter]=(userSelectedChoice.toString());
             for(int i =0; i < savedAnswers.length; i++)
@@ -227,6 +232,12 @@ public class TakingSurvey extends JFrame {
                 return true;
             }
         
+        /**
+         * Returns the JSONobject to be sent to server
+         * @param stuID the student id
+         * @param surveyID 
+         * @return 
+         */
         JsonObject toJsonForm (int stuID, int surveyID){
             //DataOutputStream out = new DataOutputStream(sock.getOutputStream());
             //creating json object
@@ -265,9 +276,8 @@ public class TakingSurvey extends JFrame {
     public class ButtonHandler implements ActionListener {
 
         /**
-         * Invoked when the button to submit information is pressed calls a
-         * ConnectionTodb will be called return a boolean value if connection was successful
-         * @param e in this case it wont do anything except allow program to execute proper calls
+         * Invoked when the button to advance question is pressed if questions is not answered JoptionPane will popup
+         * @param ae in this case it wont do anything except allow program to execute proper calls
          */
         @Override
         public void actionPerformed(ActionEvent ae) {
@@ -296,7 +306,9 @@ public class TakingSurvey extends JFrame {
     		if (qCounter == (questions.length-1)) next.setEnabled(false); else next.setEnabled(true);
     		if (qCounter == (questions.length-1)) submit.setEnabled(true);
         }
-        
+        /**
+         * if next button is pressed
+         */
         void NextQuestion(){
         	qCounter++;
         	//getInfo();
@@ -304,11 +316,17 @@ public class TakingSurvey extends JFrame {
     		NewQuestion();
         }
         
+        /**
+         * if previous is pressed
+         */
         void PreviousQuestion(){
         	qCounter--;
     		resetQuestion();
     		NewQuestion();
         }
+        /**
+         * if user selects a number
+         */
         void customQ (){
         	resetQuestion();
     		NewQuestion();
@@ -361,14 +379,4 @@ public class TakingSurvey extends JFrame {
             //savedAnswers.add(qCounter, userSelectedChoice.toString());
         }
     }
-	
-//	public static void main(String[] args) {
-//		 TakingSurvey window = new TakingSurvey();
-//		window.setTitle("Student Evaluation");
-//		//window.setResizable(false);
-//        window.setSize(1100, 900);
-//        window.setLocationRelativeTo(null);
-//        window.setVisible(true);
-//        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//	}
 }
