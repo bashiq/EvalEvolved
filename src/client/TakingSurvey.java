@@ -5,8 +5,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
@@ -15,17 +18,37 @@ import javax.json.JsonObjectBuilder;
 import javax.swing.*;
 
 public class TakingSurvey extends JFrame {
-	private JButton previous, next, submit;
+	JButton previous, next, submit;
 	private EvalQuestions [] questions = null;
 	private JPanel qPanel;
 	private ArrayList jBoxes;
 	private ArrayList<String> userSelectedChoice = new ArrayList<String>();
 	private String savedAnswers[];
 	private int qCounter=0;
+        private String toJsonString =null;
 
 	TakingSurvey (){
-		
-		
+            
+            this.setTitle("Student Evaluation");
+            //window.pack();
+            this.setSize(1000, 500);
+            this.setLocationRelativeTo(null);
+            this.setVisible(true);
+            this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            addWindowListener(new WindowAdapter() {//taken from stackOverflow
+            @Override//link: http://stackoverflow.com/questions/15449022/show-prompt-before-closing-jframe
+                public void windowClosing(WindowEvent we)
+                { 
+                    String ObjButtons[] = {"Yes","No"};
+                        int PromptResult = JOptionPane.showOptionDialog(null,
+                                "Are you sure you want to exit?","You won't",
+                                JOptionPane.DEFAULT_OPTION,JOptionPane.YES_NO_OPTION,null,ObjButtons,ObjButtons[1]);
+                    if(PromptResult==JOptionPane.YES_OPTION){
+                        DisposeWindow();
+                    }
+                }
+            });
+        
 		RetrieveQuestions();
 		//this.add(new JTextArea());
 		SouthBar();
@@ -132,8 +155,8 @@ public class TakingSurvey extends JFrame {
 		}
 		
 		//add all
-		this.add(qPanel);
-		
+                
+		this.add(qPanel, BorderLayout.CENTER);
 	}
 	
 	/**
@@ -184,13 +207,57 @@ public class TakingSurvey extends JFrame {
 		qPanel.removeAll();
 		qPanel.revalidate();
 		//qPanel.repaint(); dont need 
-		
-		
-		
-		//this.getContentPane().removeAll();//this will clear frame
-    	//this.getContentPane().revalidate();
-    	//this.getContentPane().repaint();
 	}
+        
+        public String getEvalJson(){
+            //this.dispose();
+            return toJsonString;
+        }
+        void DisposeWindow(){
+            this.dispose();
+        }
+        boolean IsAllQ(){
+            savedAnswers[qCounter]=(userSelectedChoice.toString());
+            for(int i =0; i < savedAnswers.length; i++)
+        	if(savedAnswers[i] == null){
+                    JOptionPane.showMessageDialog (null, "Question "+ (i+1) + " has not been answered.",
+            		"Yeah Ok", JOptionPane.WARNING_MESSAGE);
+                    return false;
+        	}
+                return true;
+            }
+        
+        String toJsonForm (int stuID, int surveyID){
+            //DataOutputStream out = new DataOutputStream(sock.getOutputStream());
+            //creating json object
+            JsonObjectBuilder ultimateBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder dataBuilder = Json.createObjectBuilder();
+            JsonObjectBuilder questionBuilder = Json.createObjectBuilder();
+            JsonArrayBuilder questionArrayBuilder = Json.createArrayBuilder();
+
+            for (int i = 0; i < questions.length; i++) {
+                questionBuilder.add("choices",Arrays.toString(questions[i].getOptions()))
+                    .add("possibleAnswers", savedAnswers[i]);
+            JsonObject jo = questionBuilder.build();
+            questionArrayBuilder.add(jo);
+            }
+            
+           // JsonArray jsonarr = loanArrayBuilder.build();
+            ultimateBuilder.add("method", "storeSurvey");
+            dataBuilder.add("stuID", stuID)
+                .add("SurveyID", surveyID)
+                .add("Results", questionArrayBuilder);
+            ultimateBuilder.add("data", dataBuilder);
+            JsonObject ultimateOb = ultimateBuilder.build();
+           // out.flush();
+            //out.writeUTF(LoanJsonObject.toString());//sending it
+            System.out.println(ultimateOb.toString());
+            
+            String result = (ultimateOb.toString());
+            DisposeWindow();
+           return ultimateOb.toString();
+        }
+       
 	
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////	
 	/**
@@ -221,7 +288,7 @@ public class TakingSurvey extends JFrame {
         	}else if(ae.getSource()== previous){
         		PreviousQuestion();
         	}else if(ae.getSource()== submit){
-        		SubmitEval();//method to see if all questions are answered
+        		;//SubmitEval();//method to see if all questions are answered
         	}else{
 
         		qCounter = Integer.parseInt(ae.getActionCommand())-1;
@@ -248,35 +315,6 @@ public class TakingSurvey extends JFrame {
         	resetQuestion();
     		NewQuestion();
         }
-        
-        void SubmitEval(){
-            for(int i =0; i < savedAnswers.length; i++)
-        	if(savedAnswers[i] == null){
-                    JOptionPane.showMessageDialog (null, "Question "+ (i+1) + " has not been answered.",
-            		"Yeah Ok", JOptionPane.WARNING_MESSAGE);
-                    return;
-        	}
-            //DataOutputStream out = new DataOutputStream(sock.getOutputStream());
-            //creating json object
-            JsonObjectBuilder ultimateBuilder = Json.createObjectBuilder();
-            JsonObjectBuilder questionBuilder = Json.createObjectBuilder();
-            JsonArrayBuilder questionArrayBuilder = Json.createArrayBuilder();
-
-            for (int i = 0; i < questions.length; i++) {
-                questionBuilder.add(questions[i].getQuestion(),savedAnswers[i])
-                    .add("button", questions[i].getButtonType());
-            JsonObject jo = questionBuilder.build();
-            questionArrayBuilder.add(jo);
-            }
-            
-           // JsonArray jsonarr = loanArrayBuilder.build();
-            ultimateBuilder.add("PH202D01", questionArrayBuilder);
-            JsonObject ultimateOb = ultimateBuilder.build();
-           // out.flush();
-            //out.writeUTF(LoanJsonObject.toString());//sending it
-            System.out.println(ultimateOb.toString());
-            System.out.println("sent");
-    }
     }
     
     
@@ -326,13 +364,13 @@ public class TakingSurvey extends JFrame {
         }
     }
 	
-	public static void main(String[] args) {
-		 TakingSurvey window = new TakingSurvey();
-		window.setTitle("Student Evaluation");
-		//window.setResizable(false);
-        window.setSize(1100, 900);
-        window.setLocationRelativeTo(null);
-        window.setVisible(true);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
+//	public static void main(String[] args) {
+//		 TakingSurvey window = new TakingSurvey();
+//		window.setTitle("Student Evaluation");
+//		//window.setResizable(false);
+//        window.setSize(1100, 900);
+//        window.setLocationRelativeTo(null);
+//        window.setVisible(true);
+//        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//	}
 }
