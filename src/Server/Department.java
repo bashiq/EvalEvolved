@@ -78,5 +78,4 @@ public class Department
     {
         this.chair = chair;
     }
-	
 }

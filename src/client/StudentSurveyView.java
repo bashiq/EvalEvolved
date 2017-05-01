@@ -1,10 +1,12 @@
 package client;
 
+import Server.Survey;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -19,19 +21,22 @@ import javax.swing.event.ListSelectionListener;
 
 
 public class StudentSurveyView extends JPanel{
-	private JList availible, completed;
+	private JList availibleList, completedList;
 	private JButton next;
-	private String[] str = {"Dummy Data", "D2"};//actual data from serever will go here
+	private String[] completedStr;//actual data from serever will go here
+        private String[] uncompStr;
 	private String chosenSurvey, results;
 	private JsonCommunication jcom;
-        private int stuID, courseID;
+        private int stuID, fkcourseID;
+        private ArrayList<Survey> surveyList;
         
         
-	StudentSurveyView(JsonCommunication jcom){
-		this.jcom = jcom;
-		DisplayElements();
-		
+	StudentSurveyView(JsonCommunication jcom, ArrayList<Survey> sur){
+            this.SetSurveyList(sur);
+            this.jcom = jcom;
+            DisplayElements();
 	}
+        
 	private void DisplayElements(){
             this.setLayout(new BorderLayout());
 		this.add(new JLabel("Student Survey List",SwingConstants.CENTER), BorderLayout.NORTH, JLabel.CENTER);
@@ -39,23 +44,23 @@ public class StudentSurveyView extends JPanel{
 		main.setLayout(new GridLayout(5,1));
 		
 		//information recieved from server will be displayed here
-		//possibly blah.getStudentcompleted surveys and uncompleted as string arr
+		//possibly blah.getStudentcompletedList surveys and uncompleted as string arr
 		main.add(new JLabel("Availible surveys", SwingConstants.CENTER));
-		availible = new JList(str);
-		availible.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		availible.setFixedCellWidth(250);
+		availibleList = new JList(uncompStr);
+		availibleList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		availibleList.setFixedCellWidth(250);
 		
 		
 		JPanel advancer = new JPanel();
-		advancer.add(availible, BorderLayout.CENTER);
+		advancer.add(availibleList, BorderLayout.CENTER);
 		advancer.add(next = new JButton("Take survey"), BorderLayout.EAST);
 		
 		main.add(advancer);
 		
 		main.add(new JLabel("Submitted Surveys", SwingConstants.CENTER));
-		completed = new JList(str);
-                completed.setEnabled(false);
-		main.add(completed);
+		completedList = new JList(completedStr);
+                completedList.setEnabled(false);
+		main.add(completedList);
 		
 		this.add(main, BorderLayout.CENTER);
 		
@@ -63,9 +68,33 @@ public class StudentSurveyView extends JPanel{
 		ButtonHandler bh = new ButtonHandler();
         next.addActionListener(bh);
         SurveyChoiceListener listener = new SurveyChoiceListener();//listener for countries
-        availible.addListSelectionListener(listener);
+        availibleList.addListSelectionListener(listener);
 		
 	}
+
+        /**
+         * A method that will be used by the main frame to pass in complete and uncomplete surveys
+         * @param surveyList the surveylist as an arraylist
+         */
+    public void SetSurveyList(ArrayList<Survey> surveyList) {
+        this.surveyList = surveyList;
+        completedStr = new String [surveyList.size()];
+        uncompStr = new String [surveyList.size()];
+        for(int i = 0; i < surveyList.size(); i++){
+            if(surveyList.get(i).isCompleted()){
+                System.out.println(surveyList.get(i).isCompleted());
+                completedStr[i] = surveyList.get(i).getCourse();
+            }else
+                uncompStr[i]= surveyList.get(i).getCourse();
+        }
+    }
+    private void Revalidate(){
+        this.removeAll();
+        this.revalidate();
+        //this.repaint();
+    }
+        
+        
         
 	
      /**
@@ -102,17 +131,25 @@ public class StudentSurveyView extends JPanel{
         
         taksur.submit.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent ae) {
-            
+            ArrayList<Survey> incoming= null;
             if(taksur.IsAllQ()){
                 try {
-                    jcom.StoreStuEvalResults(taksur.toJsonForm(stuID, courseID));
+                    incoming =jcom.StoreStuEvalResults(taksur.toJsonForm(jcom.getUserID(), surveyList.get(fkcourseID).getCID()));
+                    //System.out.println(fkcourseID);
                 } catch (IOException ex) {
                     Logger.getLogger(StudentSurveyView.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                
-                JOptionPane.showMessageDialog (null, "success or failure",
+                if(incoming == null){
+                    JOptionPane.showMessageDialog (null, "success or failure",
             		"YEAH", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                SetSurveyList(incoming);
+                Revalidate();
+                DisplayElements();
+                //completedList.add(surveyList.get(fkcourseID).getCourse());
                 //refreshwindow
+                
                 
             }
         }   
@@ -124,7 +161,7 @@ public class StudentSurveyView extends JPanel{
     }
     
     /**
-     * Listener that is notified when a country is chosen
+     * Listener that is notified when a survey is chosen
      */
     public class SurveyChoiceListener implements ListSelectionListener {
 
@@ -136,7 +173,8 @@ public class StudentSurveyView extends JPanel{
         public void valueChanged(ListSelectionEvent e) {
             JList cbox = (JList) e.getSource();
             
-            chosenSurvey = str[cbox.getSelectedIndex()];
+            chosenSurvey = uncompStr[cbox.getSelectedIndex()];
+            fkcourseID = cbox.getSelectedIndex();
         }
     }
 

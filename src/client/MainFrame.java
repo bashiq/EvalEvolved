@@ -5,8 +5,12 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -32,6 +36,19 @@ public class MainFrame extends JFrame {
      * This method will add all the visual components to the Jframe
      */
     MainFrame() {
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            addWindowListener(new WindowAdapter() {//taken from stackOverflow
+            @Override//link: http://stackoverflow.com/questions/15449022/show-prompt-before-closing-jframe
+                public void windowClosing(WindowEvent we)
+                { 
+                try {
+                    jcom.LogOff();
+                    DisposeWindow();
+                } catch (IOException ex) {
+                    ex.getLocalizedMessage();
+                }
+                }
+            });
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());//taken from stackoverflow
         } catch (Exception e) {//for visual presentation
@@ -52,10 +69,7 @@ public class MainFrame extends JFrame {
         ButtonHandler bh = new ButtonHandler();
 
         logWin.loginbttn.addActionListener(bh);
-
-        //log.login
-        StudentSurveyView stuSurView = new StudentSurveyView(jcom);
-        mainPanel.add(stuSurView, "studentview");
+        
         //mainWindowLayout.show(mainPanel, "login");
 
         // mainWindowLayout.show(mainPanel, "studentview");
@@ -82,20 +96,28 @@ public class MainFrame extends JFrame {
                             "Yeah Ok", JOptionPane.WARNING_MESSAGE);
                     return;
                 } else {
-                    try {
-                       ArrayList<Survey> income = jcom.loginInfo(Integer.parseInt(logWin.getId()));//sending userid to server to get verified
-                       
-                        //System.out.println(income.get(1));
-                      //  System.out.println(logWin.getId());
+                    try { 
+                      
+                       if(jcom.getRank() == -1){
+                           JOptionPane.showMessageDialog(null, jcom.getServerMessage(),
+                            "Yeah Ok", JOptionPane.WARNING_MESSAGE);
+                        return;
+                       }
+                        ArrayList<Survey> income = jcom.loginInfo(Integer.parseInt(logWin.getId()));//sending userid to server to get verified
                         
-                        int rank = 0;
+                       // System.out.println(income.get(0));
+                        
+                        
                         //jcom.loginInfo(1);
-                        if (rank == 0) {//if user is rank 0 they are assumed to be a student and prompted to StudentSurvey view
+                        if (jcom.getRank() == 0) {//if user is rank 0 they are assumed to be a student and prompted to StudentSurvey view
                             //send info to db for authentication
+                            stuSurView = new StudentSurveyView(jcom, income);
+                            mainPanel.add(stuSurView, "studentview");
+                            //stuSurView.setSurveyList(income);
                             mainWindowLayout.show(mainPanel, "studentview");
 
                         }else{//user will be prompted to FacultyCouseListView
-                            facView = new FacultyCourseListView(rank);
+                            facView = new FacultyCourseListView(jcom.getRank());
                             mainPanel.add(facView, "facView");
                             mainWindowLayout.show(mainPanel, "facView");
                         }
@@ -103,13 +125,16 @@ public class MainFrame extends JFrame {
                         
                     } catch (NumberFormatException ex) {//will ensure user can only enter integer
                         JOptionPane.showMessageDialog(null, "Enter proper ID",
-                                "Yeah Ok", JOptionPane.WARNING_MESSAGE);
+                               "Yeah Ok", JOptionPane.WARNING_MESSAGE);
                     } catch (IOException ex) {
                         ex.getLocalizedMessage();
                     }
                 }
             }
         }
+    }
+    void DisposeWindow(){
+        this.dispose();
     }
 
     public static void main(String[] args) {
@@ -119,6 +144,5 @@ public class MainFrame extends JFrame {
         window.setSize(1100, 900);
         window.setLocationRelativeTo(null);
         window.setVisible(true);
-        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 }

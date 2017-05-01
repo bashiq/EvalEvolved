@@ -227,7 +227,7 @@ public class TakingSurvey extends JFrame {
                 return true;
             }
         
-        String toJsonForm (int stuID, int surveyID){
+        JsonObject toJsonForm (int stuID, int surveyID){
             //DataOutputStream out = new DataOutputStream(sock.getOutputStream());
             //creating json object
             JsonObjectBuilder ultimateBuilder = Json.createObjectBuilder();
@@ -237,25 +237,23 @@ public class TakingSurvey extends JFrame {
 
             for (int i = 0; i < questions.length; i++) {
                 questionBuilder.add("choices",Arrays.toString(questions[i].getOptions()))
-                    .add("possibleAnswers", savedAnswers[i]);
+                    .add("selected", savedAnswers[i]);
             JsonObject jo = questionBuilder.build();
             questionArrayBuilder.add(jo);
             }
             
            // JsonArray jsonarr = loanArrayBuilder.build();
-            ultimateBuilder.add("method", "storeSurvey");
+            ultimateBuilder.add("method", "returnSurvey");
             dataBuilder.add("stuID", stuID)
                 .add("SurveyID", surveyID)
                 .add("Results", questionArrayBuilder);
             ultimateBuilder.add("data", dataBuilder);
             JsonObject ultimateOb = ultimateBuilder.build();
-           // out.flush();
-            //out.writeUTF(LoanJsonObject.toString());//sending it
             System.out.println(ultimateOb.toString());
             
-            String result = (ultimateOb.toString());
+            
             DisposeWindow();
-           return ultimateOb.toString();
+           return ultimateOb;
         }
        
 	

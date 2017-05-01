@@ -103,15 +103,18 @@ public EvalQuestions() {
 	
 	public static void main (String [] args){
 		ArrayList<EvalQuestions>  list1 = new ArrayList <EvalQuestions> ();	
-		String [] choices = {"hw", "quizes", "exam"};
-		list1.add(new EvalQuestions("which do you like?", choices,"check"));
+		String [] ans1 = {"Learning Center", "CyberLab", "EELab", "Fusion Lab","Tutor"};
+		list1.add(new EvalQuestions("Which resourses did you access while in this class: (Select all that apply)", ans1,"check"));
 		
-		String [] choices2 = {"sabbah", "broom", "smith"};
-		list1.add(new EvalQuestions("Favorite professor?", choices2,"radio"));
-		list1.add(new EvalQuestions());
-	
+		String [] choices2 = {"Strongly Disagree", "Disagree", "Neither Agree Nor Disagree", "Agree","Strongly Agree"};
+		list1.add(new EvalQuestions("Course Objectives were clearly defined.", choices2,"radio"));
+                System.out.println("");
+		list1.add(new EvalQuestions("The course objectives were accomplished.", choices2, "radio"));
+                list1.add(new EvalQuestions("The labs demonstrated and reinforced the course objectives.", choices2, "radio"));
+                list1.add(new EvalQuestions("The instructor was well prepared to present and discuss course material.", choices2, "radio"));
+                System.out.println("here");
 		//EvalQuestions []  eq1= (EvalQuestions[]) list1.toArray(); if need be
-		//for(EvalQuestions eq: list1){	System.out.println(eq);}
+		for(EvalQuestions eq: list1){	System.out.println(eq);}
 		try{
 		ObjectOutputStream output = new ObjectOutputStream(new FileOutputStream("test1.txt", false));
         //EvalQuestions [] b1 = list1.toArray(new EvalQuestions[list1.size()]);
@@ -139,7 +142,7 @@ public EvalQuestions() {
 			e1.printStackTrace();
 		}
 		
-        System.out.println("here we go"+ hope);
+     //   System.out.println("here we go"+ hope);
 		
 		
 		
