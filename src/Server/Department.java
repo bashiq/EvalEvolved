@@ -31,25 +31,6 @@ public class Department
     }
 
     /**
-     * Gets the courses in a Department's scope
-     * @return Courses in a department as a Set<Course>
-     */
-    public Set<Course> getCourses()
-    {
-        return classes;
-    }
-    
-
-    /**
-     * Adds a Course to the Department
-     * @param c course to be added to the Department as a Course Object
-     */
-    public void addCourse(Course c)
-    {
-        classes.add(c);
-    }
-
-    /**
      * Returns all of the faculty in the department (including the chair of the department)
      * @return All of the Faculty as a Set<Faculty>
      */
@@ -60,11 +41,19 @@ public class Department
         return ans;
     }
 
+    /**
+     * Gets a set of staff members for a dept
+     * @param staff set of staff as a Set<Faculty>
+     */
     public void setStaff(Set<Faculty> staff)
     {
         this.staff = staff;
     }
 
+    /**
+     * Gets the chair of a Dept
+     * @return chair as a Faculty obj
+     */
     public Faculty getChair()
     {
         return chair;
@@ -72,7 +61,7 @@ public class Department
 
     /**
      * Allows a department to reappoint a chair
-     * @param chair 
+     * @param chair new Chair as a Faculty object
      */
     public void setChair(Faculty chair)
     {

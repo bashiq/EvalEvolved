@@ -38,7 +38,10 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-
+/**
+ * This class encapsulates a running Evaluation server that will be able to sned, process, and receive course evaluation surveys
+ * @author kireh
+ */
 public class EvalServer extends JFrame 
 {
         //network instance variables
@@ -70,7 +73,7 @@ public class EvalServer extends JFrame
         HashMap<Integer, Course> courses = new HashMap<>();//keeps track of courses 
         
         /**
-         * Creates a new EvalServer object, connects it to the database, loads in data structures for login
+         * Creates a new EvalServer object, connects it to the database, and loads in data structures for login
          */
         public EvalServer()
         {
@@ -79,17 +82,25 @@ public class EvalServer extends JFrame
             this.setResizable(false);
             logs = new JTextArea(300,600);
             this.add(new JScrollPane(logs));
+            this.setAlwaysOnTop(true);
             try
             {
                 update("Connecting to database");
                 Class.forName("org.apache.derby.jdbc.ClientDriver");  
                 db = DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app");
+                update("Connected to database");
                 //addSurvey = db.prepareStatement("INSERT INTO SURVEY VALUES (?,?,?,?,?,?,?");
                 
                 //The following block compiles a list of all of the people who are able to sign into the
                 update("Loading data structures");
+                
+                //The following lines get a resultSet of all legal IDs
                 loginQuery = db.prepareStatement("SELECT * FROM PERSON");
                 ResultSet logins = loginQuery.executeQuery();
+                
+                /*
+                The following block will translate the resultSet into Maps of users' names, ranks and login states
+                */
                 while (logins.next())
                 {
                     Integer personID = logins.getInt("PID");
@@ -98,6 +109,7 @@ public class EvalServer extends JFrame
                     isLoggedIn.put(personID, false);
                     ranks.put(personID, logins.getInt("RANK"));
                 }
+                //the server is ready for logins at this point
                 update("Ready for login");
             }
             //Should the class not exist, the following catch block will execute.
@@ -116,8 +128,9 @@ public class EvalServer extends JFrame
          * Appends new information to the server log window
          * @param s Message to be appended to the server as a String
          */
-        public void update(String s)
+        private void update(String s)
         {
+            //The following lines get the proper time
             Calendar c = Calendar.getInstance(TimeZone.getDefault());
             String time ="[" +c.get(Calendar.MONTH)+"/"+c.get(Calendar.DATE)+"/"+c.get(Calendar.YEAR)+"@" +c.get(Calendar.HOUR_OF_DAY)+":" +c.get(Calendar.MINUTE) +"] "; 
             
@@ -429,28 +442,45 @@ public class EvalServer extends JFrame
             else
             {
                 ansBuild.add("login", false);
-                ansBuild.add("message", "This UID (" +uid +") is invalid");
+                ansBuild.add("message", "This UID (" +uid +") is invalid. \nPlease try again.");
+                ansBuild.add("rank", -1);
                 update("Invalid login attempt");
             }
-           
+           //return the loginJSON
 	    JsonObject loginJsonObject = ansBuild.build();
             
             return loginJsonObject;
         }
         
-        public void tryLogOut()
+        /**
+         * Attempts to log out a user so that they may start another session without restarting the server
+         */
+        public JsonObject tryLogOut()
         {
+            JsonObjectBuilder ansBuild = Json.createObjectBuilder();
             String name = user.getName();
             int uid = user.getUid();
             boolean ans = isLoggedIn.get(uid);
-            isLoggedIn.replace(uid, !ans);
-            update(name +"has logged out");
+            //if the user is logged in, this code will execute
+            if (ans)
+            {
+                isLoggedIn.replace(uid, !ans);
+                ansBuild.add("logOut", true);
+                update(name +"has logged out");
+            }
+            //if the user is not logged in, this code will execute
+            else
+            {
+                ansBuild.add("logout", false)
+                        .add("message", "Connection Error");
+            }
+            return ansBuild.build();
         }
         
         /**
          * Reads the Method JSON from the client and routes control flow to the proper route
          * @param input The JSON object that is passed through the 
-         * @return Output with which to update the server log as a String
+         * @return Output to send to the client as a JsonStructure
          */
         public JsonStructure readMethodJSON(JsonObject input)
         {
@@ -491,6 +521,5 @@ public class EvalServer extends JFrame
                 Logger.getLogger(EvalServer.class.getName()).log(Level.SEVERE, null, ex);
             }
           }
-        }
-        
+        }  
     }

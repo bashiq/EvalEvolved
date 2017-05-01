@@ -10,8 +10,6 @@ import java.util.ArrayList;
 public class Survey
 {
     private int surveyNumber;
-
-   
     private int sid;
     private int cid;
     private String fileName;
@@ -44,14 +42,15 @@ public class Survey
      * @param stats relative file path of statsFile as a string
      * @param completion completion status as an int
      */
-    public Survey(int sid, int cid, String stats, int completion)
+    public Survey(int surveyNum, int sid, int cid, String stats, int completion)
     {
+        this.surveyNumber=surveyNum;
         this.setSID(sid);
         this.setCID(cid);
         this.setStatFile(stats);
         this.setCompleted(completion);
     }
-    
+   
     /**
      * Gets the ID number of the survey object
      * @return SurveyID as an int
