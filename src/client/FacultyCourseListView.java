@@ -198,7 +198,7 @@ public class FacultyCourseListView extends JPanel {
         /**
          * invoked when item has beem selected or deselected
          *
-         * @param e
+         * @param e the source event
          */
         @Override//handler method
         public void itemStateChanged(ItemEvent e) {
@@ -223,7 +223,7 @@ public class FacultyCourseListView extends JPanel {
         /**
          * called when selection value is changed
          *
-         * @param e
+         * @param e the source
          */
         @Override
         public void valueChanged(ListSelectionEvent e) {

@@ -32,7 +32,7 @@ public class Department
 
     /**
      * Gets the courses in a Department's scope
-     * @return Courses in a department as a Set<Course>
+     * @return Courses in a department as a Set
      */
     public Set<Course> getCourses()
     {
@@ -51,7 +51,7 @@ public class Department
 
     /**
      * Returns all of the faculty in the department (including the chair of the department)
-     * @return All of the Faculty as a Set<Faculty>
+     * @return All of the Faculty as a faculty Set
      */
     public Set<Faculty> getStaff()
     {
@@ -72,7 +72,7 @@ public class Department
 
     /**
      * Allows a department to reappoint a chair
-     * @param chair 
+     * @param chair the chair object
      */
     public void setChair(Faculty chair)
     {

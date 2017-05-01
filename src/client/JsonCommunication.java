@@ -102,6 +102,7 @@ public class JsonCommunication
      * Method will send student completed eval to server, will recieve confirmation if successful
      * @param input json object created intaking survey
      * @return arraylist
+     * @throws java.io.IOException taken care in another function
      */
     public ArrayList<Survey> StoreStuEvalResults(JsonObject input) throws IOException{
        ArrayList<Survey> out = null;
@@ -123,7 +124,7 @@ public class JsonCommunication
     }
     /**
      * Method is used to get course stats
-     * @param input
+     * @param input userID
      * @return String or arraylist of survey objs
      * @throws IOException called in facCourseList
      */
@@ -141,7 +142,7 @@ public class JsonCommunication
     
     /**
      * Logg of function to properly close sockets and etc
-     * @throws IOException 
+     * @throws IOException will be taken care in another method
      */
     public void LogOff() throws IOException{
         JsonObjectBuilder logOffBuild = Json.createObjectBuilder();
@@ -152,8 +153,10 @@ public class JsonCommunication
         
         JsonObject jo = logOffBuild.build();
         System.out.println();
-        //jw.writeObject(jo);
-        if(userID != 0)//){jw != null){
+        jw.writeObject(jo);
+        JsonObject inObj = jr.readObject();
+        if(inObj.getBoolean("logOut")){
+        
             
 //            jw.close();
 //            jr.close();
@@ -161,7 +164,9 @@ public class JsonCommunication
             out.close();
             sock.close();
             System.out.println("here");
-      //  }
+            
+        }else
+            System.out.println("error");
     }
 
     /**

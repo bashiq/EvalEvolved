@@ -126,7 +126,7 @@ public class CourseStatView extends JFrame {
         /**
          * Invoked when the button to go back to facultycourselistview is pressed
          *
-         * @param e in this case it wont do anything except allow program to
+         * @param ae in this case it wont do anything except allow program to
          * execute proper calls
          */
         @Override

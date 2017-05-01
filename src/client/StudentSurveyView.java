@@ -174,7 +174,7 @@ public class StudentSurveyView extends JPanel{
 
         /**
          * called when selection value is changed
-         * @param e
+         * @param e the source of the event
          */
         @Override
         public void valueChanged(ListSelectionEvent e) {

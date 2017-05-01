@@ -23,7 +23,7 @@ public class Survey
     /**
      * Creates a new Survey object for which data files must be created
      * Meant to construct surveys that do NOT already exist in the database
-     * @param sid Student to complete the survey as an object
+     * @param s Student to complete the survey as an object
      * @param c Course to be evaluated as a course object 
      */
     public Survey(Student s, Course c)
@@ -40,7 +40,6 @@ public class Survey
      * Meant to construct Surveys that already exist in the database
      * @param sid Student id as an int
      * @param cid Course ID as an int
-     * @param fileName relative file path of surveyFile as a String
      * @param stats relative file path of statsFile as a string
      * @param completion completion status as an int
      */
@@ -81,7 +80,7 @@ public class Survey
 
     /**
      * Sets a completion status based o
-     * @param completed 
+     * @param completed an 1 or any other number
      */
     public void setCompleted(int completed)
     {

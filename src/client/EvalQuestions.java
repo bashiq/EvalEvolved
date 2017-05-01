@@ -44,7 +44,7 @@ public EvalQuestions() {
 
         /**
          * Returns the question text for an EvalQuestion object
-         * @return 
+         * @return string question
          */
 	public String getQuestion() {
 		return question;
@@ -78,7 +78,7 @@ public EvalQuestions() {
 
         /**
          * set possible answers for a question
-         * @param options 
+         * @param options as an array
          */
 	public void setOptions(String[] options) {
 		this.options = options;
