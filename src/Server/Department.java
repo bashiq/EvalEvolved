@@ -78,9 +78,4 @@ public class Department
     {
         this.chair = chair;
     }
-	
-    public static int getMax(String dept)
-    {
-        if 
-    }
 }

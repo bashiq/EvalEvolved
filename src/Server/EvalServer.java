@@ -1,8 +1,12 @@
 package Server;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -22,6 +26,9 @@ import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
+import javax.json.JsonStructure;
+import javax.json.JsonWriter;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -32,7 +39,9 @@ public class EvalServer extends JFrame
         //network instance variables
         ServerSocket service = null;
         Thread t;
-	
+	static ArrayList<Socket> clients; 
+        static ArrayList<Thread> clientThreads;
+        
         //database connection instance variables
 	Connection db = null;//connection for the database
         private PreparedStatement studentSurveys;
@@ -50,10 +59,10 @@ public class EvalServer extends JFrame
         private JScrollPane logPane;
         
         //login data
-        HashMap<Integer, Integer> ranks;
-        HashMap<Integer, String> people;
-        HashMap<Integer, Boolean> isLoggedIn;//keeps track of who logs in
-        HashMap<Integer, Course> courses;//keeps track of courses 
+        HashMap<Integer, Integer> ranks = new HashMap<>();
+        HashMap<Integer, String> people = new HashMap<>();
+        HashMap<Integer, Boolean> isLoggedIn = new HashMap<>();//keeps track of who logs in
+        HashMap<Integer, Course> courses = new HashMap<>();//keeps track of courses 
         
         /**
          * Creates a new EvalServer object, connects it to the database
@@ -61,12 +70,11 @@ public class EvalServer extends JFrame
         public EvalServer()
         {
             super("EvalEvolved Server Software");
-            Connection connection = null;
             try
             {
                 Class.forName("org.apache.derby.jdbc.ClientDriver");  
-                connection = DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app");
-                addSurvey = db.prepareStatement("INSERT INTO SURVEY VALUES (?,?,?,?,?,?,?");
+                db = DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app");
+                //addSurvey = db.prepareStatement("INSERT INTO SURVEY VALUES (?,?,?,?,?,?,?");
                 
                 //The following block compiles a list of all of the people who are able to sign into the 
                 loginQuery = db.prepareStatement("SELECT * FROM PERSON");
@@ -98,7 +106,7 @@ public class EvalServer extends JFrame
          */
         public void update(String s)
         {
-            logs.append("\n" +s);
+            //logs.append("\n" +s);
         }
 	/*
 	 * Student methods
@@ -128,13 +136,13 @@ public class EvalServer extends JFrame
             {
                 try
                 {
-                    studentSurveys= db.prepareStatement("Select * from SURVEY where SID=?");
+                    studentSurveys= db.prepareStatement("Select * from SURVEY where STUDENT=?");
                     studentSurveys.setInt(1, id);
                     rs = studentSurveys.executeQuery();
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("SID"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -158,7 +166,7 @@ public class EvalServer extends JFrame
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("SID"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -186,7 +194,7 @@ public class EvalServer extends JFrame
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("SID"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -209,7 +217,7 @@ public class EvalServer extends JFrame
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("SID"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -240,7 +248,7 @@ public class EvalServer extends JFrame
                 ResultSet rs = findStatement.executeQuery();
                 while (rs.next())
                 {
-                    statpath = rs.getString("STATFILE");
+                    statPath = rs.getString("STATFILE");
                 }
             }
             catch (SQLException sql)
@@ -274,32 +282,50 @@ public class EvalServer extends JFrame
         public JsonObject sendStats(int cid)
         {
             JsonObjectBuilder ansBuild = Json.createObjectBuilder();
-            
+            return ansBuild.build();
         }
         
-        
+        public void threadCreate(DataInputStream is, DataOutputStream os)
+        {
+            Thread t = new Thread(new ServerTask(is, os));
+            t.start();
+            System.out.println("Threaded");
+        }
         
             
         public static void main(String[] args)
         {
+//            try
+//            {
+//             Class.forName("org.apache.derby.jdbc.ClientDriver");  
+//                db = DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app");
+//            }
+//            catch (ClassNotFoundException cnfe)
+//            {
+//                System.out.println("Line 298");
+//            }
+//            catch (SQLException sql)
+//            {
+//                        System.out.println("Line 302");
+//            }
             EvalServer demo = new EvalServer();
             demo.setSize(200, 400);
             
             ServerSocket service = null;//declares the ServerSocket to run the service
-            ArrayList<Socket> clients = new ArrayList<>();
+            clients = new ArrayList<>();
 		/*
 		 * Establishes the ServerSocket and continues to listen for new connections
 		 */
 		try 
 		{
-			service = new ServerSocket(5555);//creates a new TCP socket connection at the specified port number
-			Socket client;//holder variable to track the client socket
+			service = new ServerSocket(5143);//creates a new TCP socket connection at the specified port number
+			Socket client= null;//holder variable to track the client socket
 			
 			while (true)
 			{
-				clients.add(service.accept()); //until a client connects, the server will  listen for a connection
-				Thread t = new Thread(new ServerTask());
-				//t.start();//starts the newly created thread
+				client=service.accept(); //until a client connects, the server will  listen for a connection
+                                
+				demo.threadCreate(new DataInputStream(client.getInputStream()), new DataOutputStream(client.getOutputStream()));
 			}
 		}
 		/*
@@ -335,10 +361,14 @@ public class EvalServer extends JFrame
     class ServerTask implements Runnable
     {
         User user;
+        DataInputStream input;
+        DataOutputStream output;
         
-        public ServerTask()
+        public ServerTask(DataInputStream is, DataOutputStream os)
         {
             super();
+            input = is;
+            output = os;
         }
         
         /**
@@ -347,7 +377,7 @@ public class EvalServer extends JFrame
          * @return  A JsonObject containing login success as a boolean and 
          * appropriate list of courses or surveys as a JsonArray
          */
-        public JsonObject tryLogin(int data)
+        public JsonObject tryLogin(JsonObject data)
         {   
             //answer variable
             JsonObjectBuilder ansBuild = Json.createObjectBuilder();
@@ -357,7 +387,7 @@ public class EvalServer extends JFrame
             JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
             
             //UID holder variable
-            Integer uid = data;
+            Integer uid = data.getInt("UID");
             
             //the following block controls if the UID is valid in the database
             if (people.containsKey(uid))
@@ -408,29 +438,45 @@ public class EvalServer extends JFrame
          * @param input The JSON object that is passed through the 
          * @return Output with which to update the server log as a String
          */
-        public String readMethodJSON(JsonObject input)
+        public JsonStructure readMethodJSON(JsonObject input)
         {
             String ans = "";
             switch (input.getString("method"))
             {
-                case "login" : tryLogin(input.getInt("data"));
-                
-                case "getSurveys" : getSurveys(user.getRank(), user.getUid());
+                case "login" : return tryLogin(input.getJsonObject("data"));
+                                    
+                case "getSurveys" : return getSurveys(user.getRank(), user.getUid());
                     
-                case "storeSurvey" : storeSurvey(input.getJsonObject("data"));
+                case "storeSurvey" : return storeSurvey(input.getJsonObject("data"));
                     
                 case "stats" : //send stats
                     
                 case "logoff" : //log the person off
             }
-            return ans;
+            return null;
         }
         
         @Override
         public void run()
         {
-          tryLogin(0);  
+            try
+            {
+                JsonReader jr =Json.createReader(input);
+                JsonWriter jw = Json.createWriter(output);
+                //DataInputStream read = new DataInputStream(input);
+                
+                while (input.available()>0)
+                { 
+                    //output.writeUTF("The server is still connected");
+                    JsonObject ans = (JsonObject)readMethodJSON(jr.readObject());
+                    System.out.println(ans);
+                    jw.write(ans);
+                }
+            } catch (IOException ex)
+            {
+                Logger.getLogger(EvalServer.class.getName()).log(Level.SEVERE, null, ex);
+            }
+          }
         }
         
     }
-}
