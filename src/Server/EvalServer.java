@@ -240,7 +240,7 @@ public class EvalServer extends JFrame
                 ResultSet rs = findStatement.executeQuery();
                 while (rs.next())
                 {
-                    statpath = rs.getString("STATFILE");
+                    statPath = rs.getString("STATFILE");
                 }
             }
             catch (SQLException sql)
@@ -275,6 +275,7 @@ public class EvalServer extends JFrame
         {
             JsonObjectBuilder ansBuild = Json.createObjectBuilder();
             
+            return ansBuild.build();
         }
         
         
