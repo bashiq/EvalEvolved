@@ -9,8 +9,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -96,30 +94,33 @@ public class MainFrame extends JFrame {
                             "Yeah Ok", JOptionPane.WARNING_MESSAGE);
                     return;
                 } else {
-                    try { 
-                      
-                       if(jcom.getRank() == -1){
-                           JOptionPane.showMessageDialog(null, jcom.getServerMessage(),
-                            "Yeah Ok", JOptionPane.WARNING_MESSAGE);
-                        return;
-                       }
+                    try {
                         ArrayList<Survey> income = jcom.loginInfo(Integer.parseInt(logWin.getId()));//sending userid to server to get verified
-                        
                        // System.out.println(income.get(0));
-                        
-                        
-                        //jcom.loginInfo(1);
-                        if (jcom.getRank() == 0) {//if user is rank 0 they are assumed to be a student and prompted to StudentSurvey view
-                            //send info to db for authentication
-                            stuSurView = new StudentSurveyView(jcom, income);
-                            mainPanel.add(stuSurView, "studentview");
-                            //stuSurView.setSurveyList(income);
-                            mainWindowLayout.show(mainPanel, "studentview");
-
-                        }else{//user will be prompted to FacultyCouseListView
-                            facView = new FacultyCourseListView(jcom.getRank());
-                            mainPanel.add(facView, "facView");
-                            mainWindowLayout.show(mainPanel, "facView");
+                        //
+                        switch (jcom.getRank()) {
+                            case 0:
+                                //if user is rank 0 they are assumed to be a student and prompted to StudentSurvey view
+                                //send info to db for authentication
+                                stuSurView = new StudentSurveyView(jcom, income);
+                                mainPanel.add(stuSurView, "studentview");
+                                //stuSurView.setSurveyList(income);
+                                mainWindowLayout.show(mainPanel, "studentview");
+                                break;
+                            case 1:
+                            case 2:
+                            case 3:
+                                //user will be prompted to FacultyCouseListView
+                                facView = new FacultyCourseListView(jcom.getRank());
+                                mainPanel.add(facView, "facView");
+                                mainWindowLayout.show(mainPanel, "facView");
+                                break;
+                            default:
+                                if(jcom.getRank() == -1){
+                                    JOptionPane.showMessageDialog(null, jcom.getServerMessage(),
+                                            "Yeah Ok", JOptionPane.WARNING_MESSAGE);
+                                    //return;
+                                }   break;
                         }
                         
                         
@@ -133,14 +134,15 @@ public class MainFrame extends JFrame {
             }
         }
     }
+    /**
+     * closes window
+     */
     void DisposeWindow(){
         this.dispose();
     }
 
     public static void main(String[] args) {
         MainFrame window = new MainFrame();
-        //window.setTitle("Student Survey View");
-        //window.setResizable(false);
         window.setSize(1100, 900);
         window.setLocationRelativeTo(null);
         window.setVisible(true);

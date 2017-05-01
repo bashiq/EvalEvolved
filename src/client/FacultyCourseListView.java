@@ -21,13 +21,18 @@ import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+/**
+ * This Jpanel will allow the faculty to view the list of course and when they select one they will
+ * be prompted to another screen showing them the stats on that course
+ * @author Bilal
+ */
 public class FacultyCourseListView extends JPanel {
 
     private JComboBox professors, departments;
     private JList classes;
     private JButton go;
 
-    private String[] profarr = {"broom", "mehri", "Obama"};
+    private String[] profarr = {"broom", "mehri", "Obama"};//byebye
     private String[] deptarr = {"CS", "IA", "CE"};
     private String[] coursearr = {"CS225", "El262", "MA124"};
     private String chosen = null;
@@ -36,7 +41,10 @@ public class FacultyCourseListView extends JPanel {
     private int permissions;
     private ComboListener cl;
     
-
+/**
+ * Constructor will take in rank and show them appriopriate screen so they may view stats for an individual course
+ * @param inrank rank of faculty
+ */
     public FacultyCourseListView(int inrank) {
         rank = inrank;
         try {
@@ -45,12 +53,17 @@ public class FacultyCourseListView extends JPanel {
             e.printStackTrace();
         }
         //rank
-        if(rank ==1)
-            permissions =101;
-        else if (rank ==2)
-            permissions =102;
-        else
-            permissions =103;
+        switch (rank) {
+            case 1://if professor
+                permissions =101;
+                break;
+            case 2:
+                permissions =102;
+                break;
+            default://if dean
+                permissions =103;
+                break;
+        }
         
         this.setLayout(new GridBagLayout());
         c = new GridBagConstraints();
@@ -70,7 +83,9 @@ public class FacultyCourseListView extends JPanel {
         ProfessorList(permissions);
         ButtonDisplayer();
     }
-    
+    /**
+     * Will display button to view advanced and show a popup coursestatwindow
+     */
     void ButtonDisplayer(){
         go = new JButton("View stats for this course");
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -86,7 +101,11 @@ public class FacultyCourseListView extends JPanel {
         go.addActionListener(bh);
     }
 
-    void ClassesList(int placement) {
+    /**
+     * This method will display all courses to view stats on
+     * @param placement the rank of the faculty will ultimately determine where is displayed on the screen
+     */
+    private void ClassesList(int placement) {
         if(placement == 101) placement =3; 
         else placement =0;
         JPanel cla = new JPanel(new BorderLayout());
@@ -103,7 +122,12 @@ public class FacultyCourseListView extends JPanel {
         classes.addListSelectionListener(cl);
     }
 
-    void DepartmentList(int placement) {
+    /**
+     * Only Dean will be able to view this component
+     * user can narrow classes by department
+     * @param placement 
+     */
+    private void DepartmentList(int placement) {
         if(placement == 103) 
             placement = 2; 
         else return;
@@ -119,6 +143,10 @@ public class FacultyCourseListView extends JPanel {
         
     }
 
+    /**
+     * Dean and chair will be able to view professor list to help narrow classes
+     * @param placement 
+     */
     void ProfessorList(int placement) {
         if(placement ==101) return;
         if(placement ==102) placement =2; else placement =3;;
@@ -135,12 +163,15 @@ public class FacultyCourseListView extends JPanel {
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /**
+     * The listener for receiving action events. When the action event occurs,
+     * that object's actionPerformed method is invoked.
+     */
     public class ButtonHandler implements ActionListener {
         /**
-         * Invoked when the button to submit information is pressed.
-         * will ask db for appropriate course stats
-         * was successful
-         * @param e in this case it wont do anything except allow program to
+         * Invoked when the button to get course stats for a specific course
+         * in this case this method will check to see if something is selected before continuing
+         * @param ae in this case it wont do anything except allow program to
          * execute proper calls
          */
         @Override
@@ -167,7 +198,7 @@ public class FacultyCourseListView extends JPanel {
         /**
          * invoked when item has beem selected or deselected
          *
-         * @param e
+         * @param e the source event
          */
         @Override//handler method
         public void itemStateChanged(ItemEvent e) {
@@ -185,14 +216,14 @@ public class FacultyCourseListView extends JPanel {
         }
     }
     /**
-     * Listener that is notified when a country is chosen
+     * Listener that is notified when a course is chosen
      */
     public class CourseListener implements ListSelectionListener {
 
         /**
          * called when selection value is changed
          *
-         * @param e
+         * @param e the source
          */
         @Override
         public void valueChanged(ListSelectionEvent e) {

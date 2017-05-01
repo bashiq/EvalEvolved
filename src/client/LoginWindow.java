@@ -16,7 +16,7 @@ import javax.swing.JTextField;
 
 /**
  * @author Bilal
- *
+ *This class is basically just a gui to display and help guide the user to enter an ID
  */
 public class LoginWindow extends JPanel {
 
@@ -25,6 +25,9 @@ public class LoginWindow extends JPanel {
     JButton loginbttn;
     private boolean status = false;
 
+    /**
+     * used to create and display components on screen
+     */
     LoginWindow() {
     	
         this.setLayout(new GridLayout(3, 1));
@@ -43,6 +46,7 @@ public class LoginWindow extends JPanel {
         return id.getText();
     }
 
+    //not used any more button handler in mainframe is used
     class ButtonHandler implements ActionListener {
 
         /**
@@ -77,14 +81,4 @@ public class LoginWindow extends JPanel {
 
         }
     }
-//    public static void main(String[] args) {
-//        LoginWindow window = new LoginWindow();
-//        window.setTitle("Student Survey View");
-//        //window.setResizable(false);
-//        window.setSize(1100, 900);
-//        window.setLocationRelativeTo(null);
-//        window.setVisible(true);
-//        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//    }
-
 }

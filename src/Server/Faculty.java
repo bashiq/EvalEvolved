@@ -65,7 +65,7 @@ public class Faculty
     
     /**
      * Sets a faculty's department according to a numbering scheme for the school
-     * @param id faculty id as an int
+     * @param fid faculty id as an int
      */
     public void setDept(int fid)
     {

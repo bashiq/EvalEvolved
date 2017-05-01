@@ -19,7 +19,11 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-
+/**
+ * Class will show student completed and uncompleted surveys
+ * if uncompleted they can do it
+ * @author Bilal
+ */
 public class StudentSurveyView extends JPanel{
 	private JList availibleList, completedList;
 	private JButton next;
@@ -30,13 +34,20 @@ public class StudentSurveyView extends JPanel{
         private int stuID, fkcourseID;
         private ArrayList<Survey> surveyList;
         
-        
+        /**
+         * Default constructor used to pass in and create gui for this panel
+         * @param jcom The JSoncommunication class
+         * @param sur survey arraylist to be displayed
+         */
 	StudentSurveyView(JsonCommunication jcom, ArrayList<Survey> sur){
             this.SetSurveyList(sur);
             this.jcom = jcom;
             DisplayElements();
 	}
         
+        /**
+         * Will create and display gui elements
+         */
 	private void DisplayElements(){
             this.setLayout(new BorderLayout());
 		this.add(new JLabel("Student Survey List",SwingConstants.CENTER), BorderLayout.NORTH, JLabel.CENTER);
@@ -104,15 +115,13 @@ public class StudentSurveyView extends JPanel{
     public class ButtonHandler implements ActionListener {
 
         /**
-         * Invoked when the button to submit information is pressed calls a
-         * ConnectionTodb will be called return a boolean value if connection was successful
-         * @param e in this case it wont do anything except allow program to execute proper calls
+         * Invoked when the button to submit information is pressed calls popupsurvey
          */
         @Override
         public void actionPerformed(ActionEvent ae) {
             
-            //if(chosenSurvey.equals(null))//do nothing
-            //return;
+            if(chosenSurvey.equals(null))//do nothing
+                return;
         	
             //magic happens here
             System.out.println(chosenSurvey);
@@ -120,7 +129,9 @@ public class StudentSurveyView extends JPanel{
             
         }
     }
-    
+    /**
+     * This method will create a popup window of Takingsurvey
+     */
     public void  PopUpSurvey (){ 
         //this.removeAll();
         //this.revalidate();
@@ -129,34 +140,30 @@ public class StudentSurveyView extends JPanel{
         TakingSurvey taksur = new TakingSurvey();
         taksur.setVisible(true);
         
-        taksur.submit.addActionListener(new ActionListener(){
+        taksur.submit.addActionListener(new ActionListener(){//if submit button is pressed on eval
         public void actionPerformed(ActionEvent ae) {
             ArrayList<Survey> incoming= null;
-            if(taksur.IsAllQ()){
+            if(taksur.IsAllQ()){//check to see if all questions were answered
                 try {
                     incoming =jcom.StoreStuEvalResults(taksur.toJsonForm(jcom.getUserID(), surveyList.get(fkcourseID).getCID()));
                     //System.out.println(fkcourseID);
                 } catch (IOException ex) {
                     Logger.getLogger(StudentSurveyView.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                if(incoming == null){
+                if(incoming == null){//if null that may mean it wasnt successful
                     JOptionPane.showMessageDialog (null, "success or failure",
             		"YEAH", JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
-                SetSurveyList(incoming);
+                SetSurveyList(incoming);//recreate jpanel with current data
                 Revalidate();
                 DisplayElements();
                 //completedList.add(surveyList.get(fkcourseID).getCourse());
                 //refreshwindow
-                
-                
+
             }
         }   
-        });
-        
-    	//this.getContentPane().removeAll();//this will clear frame
-    	//this.getContentPane().revalidate();
+        });        
     	//this.getContentPane().repaint();
     }
     
@@ -167,7 +174,7 @@ public class StudentSurveyView extends JPanel{
 
         /**
          * called when selection value is changed
-         * @param e
+         * @param e the source of the event
          */
         @Override
         public void valueChanged(ListSelectionEvent e) {
