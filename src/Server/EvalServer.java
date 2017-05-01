@@ -1,5 +1,7 @@
 package Server;
 
+import java.awt.Dimension;
+import java.awt.ScrollPane;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -8,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.Connection;
@@ -16,9 +19,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.json.Json;
@@ -65,18 +70,24 @@ public class EvalServer extends JFrame
         HashMap<Integer, Course> courses = new HashMap<>();//keeps track of courses 
         
         /**
-         * Creates a new EvalServer object, connects it to the database
+         * Creates a new EvalServer object, connects it to the database, loads in data structures for login
          */
         public EvalServer()
         {
             super("EvalEvolved Server Software");
+            this.setSize(new Dimension(500, 600));
+            this.setResizable(false);
+            logs = new JTextArea(300,600);
+            this.add(new JScrollPane(logs));
             try
             {
+                update("Connecting to database");
                 Class.forName("org.apache.derby.jdbc.ClientDriver");  
                 db = DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app");
                 //addSurvey = db.prepareStatement("INSERT INTO SURVEY VALUES (?,?,?,?,?,?,?");
                 
-                //The following block compiles a list of all of the people who are able to sign into the 
+                //The following block compiles a list of all of the people who are able to sign into the
+                update("Loading data structures");
                 loginQuery = db.prepareStatement("SELECT * FROM PERSON");
                 ResultSet logins = loginQuery.executeQuery();
                 while (logins.next())
@@ -86,7 +97,8 @@ public class EvalServer extends JFrame
                     people.put(personID, fullName);
                     isLoggedIn.put(personID, false);
                     ranks.put(personID, logins.getInt("RANK"));
-                }    
+                }
+                update("Ready for login");
             }
             //Should the class not exist, the following catch block will execute.
             catch (ClassNotFoundException cnf)
@@ -106,13 +118,15 @@ public class EvalServer extends JFrame
          */
         public void update(String s)
         {
-            //logs.append("\n" +s);
+            Calendar c = Calendar.getInstance(TimeZone.getDefault());
+            String time ="[" +c.get(Calendar.MONTH)+"/"+c.get(Calendar.DATE)+"/"+c.get(Calendar.YEAR)+"@" +c.get(Calendar.HOUR_OF_DAY)+":" +c.get(Calendar.MINUTE) +"] "; 
+            
+            logs.append("\n" +time +s);
         }
 	/*
 	 * Student methods
 	 * -return list of surveys with a status for each
 	 * +receive finished surveys and...
-	 * -generate a completion token to share with the student and database
 	 * -keep separate statFiles for the different sections of a course
 	 */
         
@@ -285,31 +299,19 @@ public class EvalServer extends JFrame
             return ansBuild.build();
         }
         
-        public void threadCreate(DataInputStream is, DataOutputStream os)
+        public void threadCreate(DataInputStream is, DataOutputStream os, InetAddress newAdd)
         {
             Thread t = new Thread(new ServerTask(is, os));
             t.start();
-            System.out.println("Threaded");
+            update("New thread started at " +newAdd.toString());
         }
         
             
         public static void main(String[] args)
         {
-//            try
-//            {
-//             Class.forName("org.apache.derby.jdbc.ClientDriver");  
-//                db = DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app");
-//            }
-//            catch (ClassNotFoundException cnfe)
-//            {
-//                System.out.println("Line 298");
-//            }
-//            catch (SQLException sql)
-//            {
-//                        System.out.println("Line 302");
-//            }
             EvalServer demo = new EvalServer();
-            demo.setSize(200, 400);
+            demo.setVisible(true);
+            demo.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             
             ServerSocket service = null;//declares the ServerSocket to run the service
             clients = new ArrayList<>();
@@ -320,12 +322,13 @@ public class EvalServer extends JFrame
 		{
 			service = new ServerSocket(5143);//creates a new TCP socket connection at the specified port number
 			Socket client= null;//holder variable to track the client socket
+                        
 			
 			while (true)
 			{
 				client=service.accept(); //until a client connects, the server will  listen for a connection
                                 
-				demo.threadCreate(new DataInputStream(client.getInputStream()), new DataOutputStream(client.getOutputStream()));
+				demo.threadCreate(new DataInputStream(client.getInputStream()), new DataOutputStream(client.getOutputStream()), client.getInetAddress());
 			}
 		}
 		/*
@@ -400,10 +403,10 @@ public class EvalServer extends JFrame
                 if (logged)
                 {
                     ansBuild.add("name", name);
-                    ansBuild.add("rank", ranked);
+                    //ansBuild.add("rank", ranked);
                     ansBuild.add("login", "false");
                     ansBuild.add("message", "A session is already open with this UID");
-                    
+                    update("Failed login attempt by " +name);
                 }
                 /*
                 *if the valid user is not logged in elsewhere, they will be permitted to login here
@@ -425,12 +428,22 @@ public class EvalServer extends JFrame
             else
             {
                 ansBuild.add("login", false);
-                ansBuild.add("message", "This UID is invalid");
+                ansBuild.add("message", "This UID (" +uid +") is invalid");
+                update("Invalid login attempt");
             }
            
 	    JsonObject loginJsonObject = ansBuild.build();
             
             return loginJsonObject;
+        }
+        
+        public void tryLogOut()
+        {
+            String name = user.getName();
+            int uid = user.getUid();
+            boolean ans = isLoggedIn.get(uid);
+            isLoggedIn.replace(uid, !ans);
+            update(name +"has logged out");
         }
         
         /**
@@ -447,11 +460,11 @@ public class EvalServer extends JFrame
                                     
                 case "getSurveys" : return getSurveys(user.getRank(), user.getUid());
                     
-                case "storeSurvey" : return storeSurvey(input.getJsonObject("data"));
+                case "returnSurvey" : return storeSurvey(input.getJsonObject("data"));
                     
                 case "stats" : //send stats
                     
-                case "logoff" : //log the person off
+                case "logOff" : tryLogOut();
             }
             return null;
         }
