@@ -85,7 +85,7 @@ public class Survey
      */
     public void setCompleted(int completed)
     {
-        this.status = (completed>0);
+        this.status = (completed ==0);
     }
 
     /**
