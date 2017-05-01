@@ -139,10 +139,10 @@ public class JsonCommunication
         JsonObject jo = logOffBuild.build();
         if(jw != null){
             jw.writeObject(jo);
-            jw.close();
-            jr.close();
-            in.close();
-            out.close();
+//            jw.close();
+//            jr.close();
+//            in.close();
+//            out.close();
             sock.close();
         }
     }
