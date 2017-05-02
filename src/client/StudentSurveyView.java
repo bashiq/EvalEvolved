@@ -29,7 +29,7 @@ public class StudentSurveyView extends JPanel{
 	private JButton next;
 	private String[] completedStr;//actual data from serever will go here
         private String[] uncompStr;
-	private String chosenSurvey, results;
+	private String chosenSurvey= "", results;
 	private JsonCommunication jcom;
         private int stuID, fkcourseID;
         private ArrayList<Survey> surveyList;
@@ -95,8 +95,11 @@ public class StudentSurveyView extends JPanel{
             if(surveyList.get(i).isCompleted()){
                 System.out.println(surveyList.get(i).isCompleted());
                 completedStr[i] = surveyList.get(i).getCourse();
-            }else
+            }else{
                 uncompStr[i]= surveyList.get(i).getCourse();
+                System.out.println(surveyList.get(i).getCourse());
+                System.out.println("in ssv "+ surveyList.get(i).getSurveyNumber());
+            }
         }
     }
     private void Revalidate(){
@@ -120,8 +123,11 @@ public class StudentSurveyView extends JPanel{
         @Override
         public void actionPerformed(ActionEvent ae) {
             
-            if(chosenSurvey.equals(null))//do nothing
-                return;
+            if(chosenSurvey == ""){
+                JOptionPane.showMessageDialog (null, "Select an Eval to Continue",
+            		"YEAH", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+            }
         	
             //magic happens here
             System.out.println(chosenSurvey);
@@ -145,7 +151,7 @@ public class StudentSurveyView extends JPanel{
             ArrayList<Survey> incoming= null;
             if(taksur.IsAllQ()){//check to see if all questions were answered
                 try {
-                    incoming =jcom.StoreStuEvalResults(taksur.toJsonForm(jcom.getUserID(), surveyList.get(fkcourseID).getCID()));
+                    incoming =jcom.StoreStuEvalResults(taksur.toJsonForm(surveyList.get(fkcourseID).getSurveyNumber(), surveyList.get(fkcourseID).getCID()));
                     //System.out.println(fkcourseID);
                 } catch (IOException ex) {
                     Logger.getLogger(StudentSurveyView.class.getName()).log(Level.SEVERE, null, ex);

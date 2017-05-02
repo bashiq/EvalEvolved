@@ -1,5 +1,6 @@
 package client;
 
+import Server.Survey;
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -7,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,19 +36,21 @@ public class FacultyCourseListView extends JPanel {
 
     private String[] profarr = {"broom", "mehri", "Obama"};//byebye
     private String[] deptarr = {"CS", "IA", "CE"};
-    private String[] coursearr = {"CS225", "El262", "MA124"};
+    private String[] coursearr;
     private String chosen = null;
     private GridBagConstraints c;
     private int rank =3;
     private int permissions;
     private ComboListener cl;
+    private ArrayList <Survey> suveys;
     
 /**
  * Constructor will take in rank and show them appriopriate screen so they may view stats for an individual course
  * @param inrank rank of faculty
  */
-    public FacultyCourseListView(int inrank) {
+    public FacultyCourseListView(int inrank,ArrayList<Survey> incom) {
         rank = inrank;
+        this.SetSurveyList(incom);
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());//taken from stackoverflow
         } catch (Exception e) {//for visual presentation
@@ -60,8 +64,10 @@ public class FacultyCourseListView extends JPanel {
             case 2:
                 permissions =102;
                 break;
-            default://if dean
+            case 3: //if dean
                 permissions =103;
+                break;
+            default:
                 break;
         }
         
@@ -141,6 +147,15 @@ public class FacultyCourseListView extends JPanel {
         this.add(dep, c);
         departments.addItemListener(cl);
         
+    }
+    
+    public void SetSurveyList(ArrayList<Survey> surveyList) {
+        this.suveys = surveyList;
+       coursearr = new String [surveyList.size()];
+       
+        for(int i = 0; i < surveyList.size(); i++){
+           coursearr[i] = surveyList.get(i).getCourse();
+        }
     }
 
     /**

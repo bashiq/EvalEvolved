@@ -37,13 +37,14 @@ public class JsonCommunication
     public JsonCommunication() {
         try {
             sock = new Socket("10.0.67.95", 5143);//10.0.67.95
-
+            
            in = new DataInputStream(sock.getInputStream());
             out = new DataOutputStream(sock.getOutputStream());
         } catch (IOException ex) {
             ex.getLocalizedMessage();
         }
     }
+
     
     /**
      * Method will be used to login a user, server will send back id is proper and if they are already logged in
@@ -76,9 +77,10 @@ public class JsonCommunication
         //System.out.println(jr);
         JsonObject jsonObject = jr.readObject();
         //jr.close();
-        boolean check = jsonObject.getBoolean("login");
+        
         rank = jsonObject.getInt("rank");
-        if(check)
+        
+        if(jsonObject.getBoolean("login"))
         {
             JsonArray ja = jsonObject.getJsonArray("surveys");
               userID = input;
@@ -87,14 +89,16 @@ public class JsonCommunication
             for(Object obj: ja.toArray())//will take input from server and convert it to proper survey object
             {
                 JsonObject s = (JsonObject)obj;
-                s1.add(new Survey(s.getInt("SID"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
+                System.out.println(s.toString());
+                s1.add(new Survey(s.getInt("surveyNumber"),s.getInt("SID"), s.getString("name"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
             }
-            System.out.println(s1.get(0).getSID());
+//            System.out.println(s1.get(0).getSID());
         }
         else{
             serverMessage = jsonObject.getString("message");
            // System.out.println(serverMessage);
         }
+       // jw.close();
        return s1;
     }
     
@@ -109,6 +113,7 @@ public class JsonCommunication
         //send input
         //jw.writeObject(input);
        // recieve confirmation
+        System.out.println(input);
        jw.writeObject(input);
         JsonObject jObj = jr.readObject();
         jObj.getBoolean("status");
@@ -118,8 +123,9 @@ public class JsonCommunication
             for(Object obj: ja.toArray())
 //            {
                  s= (JsonObject)obj;
-                out.add(new Survey(s.getInt("SID"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
+                out.add(new Survey(s.getInt("surveyNumber"), s.getInt("SID"),s.getString("name"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
 //            }
+            System.out.println(out.get(0).getCID());
         return out;
     }
     /**
@@ -146,27 +152,24 @@ public class JsonCommunication
      */
     public void LogOff() throws IOException{
         JsonObjectBuilder logOffBuild = Json.createObjectBuilder();
-        JsonObjectBuilder databuild = Json.createObjectBuilder();
-       // databuild.add("UID", this.getUserID());///////////////////////////////////////////////////////////////---
+        
         logOffBuild.add("method", "logOff");
-                //.add("data", databuild);
+                
         
         JsonObject jo = logOffBuild.build();
         System.out.println();
-        jw.writeObject(jo);
-        JsonObject inObj = jr.readObject();
-        if(inObj.getBoolean("logOut")){
-        
-            
-//            jw.close();
-//            jr.close();
-            in.close();
-            out.close();
-            sock.close();
-            System.out.println("here");
-            
-        }else
-            System.out.println("error");
+//        jw.writeObject(jo);
+//        JsonObject inObj = jr.readObject();
+//        if(inObj.getBoolean("logOut")){
+//////            jw.close();
+//////            jr.close();
+////            in.close();
+////            out.close();
+//            sock.close();
+////            System.out.println("here");
+////            
+//        }else
+//            System.out.println("error");
     }
 
     /**

@@ -104,18 +104,19 @@ public class MainFrame extends JFrame {
                                 //send info to db for authentication
                                 stuSurView = new StudentSurveyView(jcom, income);
                                 mainPanel.add(stuSurView, "studentview");
-                                //stuSurView.setSurveyList(income);
+                                //stuSurView.SetSurveyList(income);
                                 mainWindowLayout.show(mainPanel, "studentview");
                                 break;
                             case 1:
                             case 2:
                             case 3:
                                 //user will be prompted to FacultyCouseListView
-                                facView = new FacultyCourseListView(jcom.getRank());
+                                facView = new FacultyCourseListView(jcom.getRank(), income);
                                 mainPanel.add(facView, "facView");
                                 mainWindowLayout.show(mainPanel, "facView");
                                 break;
                             default:
+                                System.out.println(jcom.getRank());
                                 if(jcom.getRank() == -1){
                                     JOptionPane.showMessageDialog(null, jcom.getServerMessage(),
                                             "Yeah Ok", JOptionPane.WARNING_MESSAGE);

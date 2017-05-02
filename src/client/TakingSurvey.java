@@ -8,12 +8,15 @@ import java.awt.event.ItemListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.json.Json;
+import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonReader;
 
 import javax.swing.*;
 
@@ -238,7 +241,7 @@ public class TakingSurvey extends JFrame {
          * @param surveyID 
          * @return 
          */
-        JsonObject toJsonForm (int stuID, int surveyID){
+        JsonObject toJsonForm (int surveyID, int courseID){
             //DataOutputStream out = new DataOutputStream(sock.getOutputStream());
             //creating json object
             JsonObjectBuilder ultimateBuilder = Json.createObjectBuilder();
@@ -247,21 +250,36 @@ public class TakingSurvey extends JFrame {
             JsonArrayBuilder questionArrayBuilder = Json.createArrayBuilder();
 
             for (int i = 0; i < questions.length; i++) {
-                questionBuilder.add("choices",Arrays.toString(questions[i].getOptions()))
-                    .add("selected", savedAnswers[i]);
+                questionBuilder.add("selected", savedAnswers[i]);
             JsonObject jo = questionBuilder.build();
             questionArrayBuilder.add(jo);
             }
             
            // JsonArray jsonarr = loanArrayBuilder.build();
             ultimateBuilder.add("method", "returnSurvey");
-            dataBuilder.add("stuID", stuID)
-                .add("SurveyID", surveyID)
-                .add("Results", questionArrayBuilder);
+            dataBuilder.add("courseID", courseID)
+                .add("surveyID", surveyID)
+                .add("choices",Arrays.toString(questions[0].getOptions()))
+                .add("results", questionArrayBuilder);
             ultimateBuilder.add("data", dataBuilder);
             JsonObject ultimateOb = ultimateBuilder.build();
-            System.out.println(ultimateOb.toString());
+            //System.out.println(ultimateOb.toString());
             
+            JsonReader jr = Json.createReader(new StringReader(ultimateOb.toString()));
+                    JsonObject jsonObject = jr.readObject();
+            jr.close();
+            
+           
+//           JsonArray ja = jsonObject.getJsonArray("data");
+//            String [] choices;
+//            String [] picked; 
+//           
+//            for(Object obj: ja.toArray())//will take input from server and convert it to proper survey object
+//            {
+//                picked[i] = j
+//                JsonObject s = (JsonObject)obj;
+//                s1.add(new Survey(s.getInt("surveyNumber"),s.getInt("SID"), s.getString("name"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
+//            }
             
             DisposeWindow();
            return ultimateOb;
@@ -379,4 +397,11 @@ public class TakingSurvey extends JFrame {
             //savedAnswers.add(qCounter, userSelectedChoice.toString());
         }
     }
+    
+//    public static void main(String[] args) {
+//        TakingSurvey window = new TakingSurvey();
+//        window.setSize(500, 500);
+//        window.setVisible(true);
+//        window.setDefaultCloseOperation(PROPERTIES);
+//    }
 }
