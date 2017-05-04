@@ -8,7 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -34,8 +37,8 @@ public class FacultyCourseListView extends JPanel {
     private JList classes;
     private JButton go;
 
-    private String[] profarr = {"broom", "mehri", "Obama"};//byebye
-    private String[] deptarr = {"CS", "IA", "CE"};
+    private String[] profarr = {"", "Einstein", "Obama"};//byebye
+    private String[] deptarr = {"", "CS", "CE", "EE"};
     private String[] coursearr;
     private String chosen = null;
     private GridBagConstraints c;
@@ -43,13 +46,15 @@ public class FacultyCourseListView extends JPanel {
     private int permissions;
     private ComboListener cl;
     private ArrayList <Survey> suveys;
+    private JsonCommunication jcom;
     
 /**
  * Constructor will take in rank and show them appriopriate screen so they may view stats for an individual course
  * @param inrank rank of faculty
  */
-    public FacultyCourseListView(int inrank,ArrayList<Survey> incom) {
-        rank = inrank;
+    public FacultyCourseListView(JsonCommunication jcom,ArrayList<Survey> incom) {
+        this.jcom = jcom;
+        rank = jcom.getRank();
         this.SetSurveyList(incom);
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());//taken from stackoverflow
@@ -151,10 +156,10 @@ public class FacultyCourseListView extends JPanel {
     
     public void SetSurveyList(ArrayList<Survey> surveyList) {
         this.suveys = surveyList;
-       coursearr = new String [surveyList.size()];
+       coursearr = new String [2];
        
-        for(int i = 0; i < surveyList.size(); i++){
-           coursearr[i] = surveyList.get(i).getCourse();
+        for(int i = 0; i < 2; i++){
+           coursearr[i] = "bat";//surveyList.get(i).getCourse();
         }
     }
 
@@ -195,7 +200,12 @@ public class FacultyCourseListView extends JPanel {
            // if(ae.getSource() == go){
                 if(chosen != null){
                     System.out.println(chosen);
-                    CourseStatView csv = new CourseStatView(rank);
+                    CourseStatView csv = null;
+                    try {
+                        csv = new CourseStatView(rank, jcom);
+                    } catch (IOException ex) {
+                        Logger.getLogger(FacultyCourseListView.class.getName()).log(Level.SEVERE, null, ex);
+                    }
                     csv.setVisible(true);
                 }else{
                     JOptionPane.showMessageDialog(null, "Select a course to view stats",

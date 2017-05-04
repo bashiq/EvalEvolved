@@ -7,6 +7,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
+import java.io.IOException;
 import javax.swing.JFrame;
 import javax.swing.*;
 
@@ -19,16 +20,18 @@ public class CourseStatView extends JFrame {
 
     private JTextArea statArea;
     private JList unsubmitted;
-    private String names[] = {"Joe Shmoe", "Kobe Bryent"};
+    private String names[] = {"Rick Sanchez", "Henrick Ibsen"};
     private JButton back;
     private GridBagConstraints c;
     private int rank = 1;
+    private JsonCommunication jcom;
 
     /**
      * This constructor will recieve the faculty rank and show them the appriopriate screen from there
      * @param inrank faculty rank
      */
-    public CourseStatView(int inrank) {
+    public CourseStatView(int inrank, JsonCommunication jcom) throws IOException {
+        this.jcom = jcom;
         rank = inrank;
         
         
@@ -71,12 +74,12 @@ public class CourseStatView extends JFrame {
     /**
      * The dean and department chair will be able to view stats for that course
      */
-    void DeanChairView() {
+    void DeanChairView() throws IOException {
 
         JPanel statPanel = new JPanel(new BorderLayout());
         statPanel.add(new JLabel("Statistics for this class"), BorderLayout.NORTH);
         statArea = new JTextArea(15, 70);
-        statArea.setText("kjlkdjskldjslksdjflkfjsdlkfjfdlkdjdflkjfdlkfd");
+        statArea.setText(jcom.CourseStats());
         JScrollPane scroll = new JScrollPane(statArea);
         statArea.setEditable(false);
         statPanel.add(scroll, BorderLayout.CENTER);

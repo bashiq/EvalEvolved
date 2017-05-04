@@ -193,7 +193,9 @@ public class EvalServer extends JFrame
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"))
+                                .add("surveyNumber",rs.getInt("NUM"))
+                                .add("name",rs.getInt("NAME"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -221,7 +223,9 @@ public class EvalServer extends JFrame
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"))
+                                .add("surveyNumber",rs.getInt("NUM"))
+                                .add("name",rs.getInt("NAME"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -244,7 +248,9 @@ public class EvalServer extends JFrame
                     while (rs.next())
                     {
                         JsonObjectBuilder surveyBuilder = Json.createObjectBuilder();
-                        surveyBuilder.add("SID", rs.getInt("STUDENT"));
+                        surveyBuilder.add("SID", rs.getInt("STUDENT"))
+                                    .add("surveyNumber",rs.getInt("NUM"))
+                                    .add("name",rs.getInt("NAME"));
                         surveyBuilder.add("CID", rs.getInt("COURSE"));
                         surveyBuilder.add("STATFILE", rs.getString("STATFILE"));
                         surveyBuilder.add("COMPLETION", rs.getInt("COMPLETION"));
@@ -448,7 +454,7 @@ public class EvalServer extends JFrame
             }
            //return the loginJSON
 	    JsonObject loginJsonObject = ansBuild.build();
-            
+            System.out.println("faculty" + loginJsonObject);
             return loginJsonObject;
         }
         
@@ -495,7 +501,7 @@ public class EvalServer extends JFrame
                     
                 case "stats" : //send stats
                     
-                case "logOff" : tryLogOut();
+                case "logOff" : return tryLogOut();
             }
             return null;
         }
@@ -505,16 +511,22 @@ public class EvalServer extends JFrame
         {
             try
             {
-                JsonReader jr =Json.createReader(input);
-                JsonWriter jw = Json.createWriter(output);
+                while(true){
+                JsonReader jr =Json.createReader(new StringReader(input.readUTF()));
+                //JsonWriter jw = Json.createWriter(output);
                 //DataInputStream read = new DataInputStream(input);
                 
-                while (input.available()>0)
-                { 
+              //  while (input.available()>0)
+                //{ 
                     //output.writeUTF("The server is still connected");
-                    JsonObject ans = (JsonObject)readMethodJSON(jr.readObject());
-                    System.out.println(ans);
-                    jw.write(ans);
+                    JsonObject in = jr.readObject();
+                    jr.close();
+                    //System.out.println(in.toString());
+                    JsonObject ans = (JsonObject)readMethodJSON(in);
+                    System.out.println("here "+ans);
+                    //jw.writeObject(ans);
+                    output.flush();
+                    output.writeUTF(ans.toString());
                 }
             } catch (IOException ex)
             {

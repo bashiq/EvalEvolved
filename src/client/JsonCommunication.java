@@ -3,11 +3,17 @@ package client;
 import Server.Survey;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -36,14 +42,18 @@ public class JsonCommunication
      */
     public JsonCommunication() {
         try {
-            sock = new Socket("10.0.67.95", 5143);//10.0.67.95
+            sock = new Socket("localhost", 5143);//10.0.67.95", 5143);//10.0.67.95
             
-           in = new DataInputStream(sock.getInputStream());
-            out = new DataOutputStream(sock.getOutputStream());
+            in = new DataInputStream(sock.getInputStream());
+//               // DataInputStream methods = new DataInputStream(sock.getInputStream());
+             out = new DataOutputStream(sock.getOutputStream());
+             //t = new Thread(new Reciever(sock));
+               // t.start();
+           
         } catch (IOException ex) {
             ex.getLocalizedMessage();
         }
-    }
+    }  
 
     
     /**
@@ -55,7 +65,7 @@ public class JsonCommunication
     public ArrayList<Survey> loginInfo(int input) throws IOException{
         
         ArrayList<Survey> s1 = new ArrayList<>();
-        jw =Json.createWriter(out);
+       // jw =Json.createWriter(out);
         JsonObjectBuilder loginBuild = Json.createObjectBuilder();
         JsonObjectBuilder databuild = Json.createObjectBuilder();
         databuild.add("UID", input);///////////////////////////////////////////////////////////////---
@@ -63,19 +73,17 @@ public class JsonCommunication
                 .add("data", databuild);
         
         JsonObject jo = loginBuild.build();
-//        Survey sd = new Survey(333,444,"yay", 2);//create temp survey objs
-//        sd.setCourse("pjo2");
-//        Survey sd4 = new Survey(333, 555, "yuk", 0);
-//        sd4.setCourse("yoyoma");
-//        s1.add(sd);
-//        s1.add(sd4);
-        //System.out.println(jo);
+
+        System.out.println(jo);
+        out.flush();
+        out.writeUTF(jo.toString());
+       // jw.writeObject(jo);
         
-        jw.writeObject(jo);
         
-        jr = Json.createReader(in);//reading in json string
+       JsonReader jr = Json.createReader(new StringReader(in.readUTF()));
         //System.out.println(jr);
         JsonObject jsonObject = jr.readObject();
+        jr.close();
         //jr.close();
         
         rank = jsonObject.getInt("rank");
@@ -98,7 +106,7 @@ public class JsonCommunication
             serverMessage = jsonObject.getString("message");
            // System.out.println(serverMessage);
         }
-       // jw.close();
+        //jw.close();
        return s1;
     }
     
@@ -109,67 +117,84 @@ public class JsonCommunication
      * @throws java.io.IOException taken care in another function
      */
     public ArrayList<Survey> StoreStuEvalResults(JsonObject input) throws IOException{
-       ArrayList<Survey> out = null;
+        //out.flush();
+        JsonWriter j1 = Json.createWriter(out);
+       ArrayList<Survey> out1 = null;
         //send input
         //jw.writeObject(input);
        // recieve confirmation
+        //System.out.println(input);
+        
+       j1.writeObject(input);
         System.out.println(input);
-       jw.writeObject(input);
-        JsonObject jObj = jr.readObject();
-        jObj.getBoolean("status");
-         JsonArray ja = jObj.getJsonArray("surveys");
-//            
-            JsonObject s= null;
-            for(Object obj: ja.toArray())
-//            {
-                 s= (JsonObject)obj;
-                out.add(new Survey(s.getInt("surveyNumber"), s.getInt("SID"),s.getString("name"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
-//            }
-            System.out.println(out.get(0).getCID());
-        return out;
+       //j1.close();
+       JsonReader jr1 = Json.createReader(in);//reading in json string
+        JsonObject jObj = jr1.readObject();
+        System.out.println("in "+jObj);
+        //jr1.close();
+        System.out.println("status "+jObj.getBoolean("status"));
+//         JsonArray ja = jObj.getJsonArray("surveys");
+////            
+//            JsonObject s= null;
+//            for(Object obj: ja.toArray())
+////            {
+//                 s= (JsonObject)obj;
+//                out1.add(new Survey(s.getInt("surveyNumber"), s.getInt("SID"),s.getString("name"), s.getInt("CID"), s.getString("STATFILE"), s.getInt("COMPLETION")));
+////            }
+//            System.out.println(out1.get(0).getCID());
+        return null;
     }
+    
+    
+    
     /**
      * Method is used to get course stats
-     * @param input userID
      * @return String or arraylist of survey objs
      * @throws IOException called in facCourseList
      */
-    public String CourseStats(String input) throws IOException{
+    public String CourseStats() throws IOException{
         JsonObjectBuilder loginBuild = Json.createObjectBuilder();
         loginBuild.add("method", "courseStatView")
-                .add("data", input)
+                .add("data", userID)
                 .add("courseID", "Ph202");//fix
         
         JsonObject jo = loginBuild.build();
-       // out.writeUTF(jo.toString());
-        System.out.println(in.readUTF());
-        return "s1";
+       //JsonWriter j1 = Json.createWriter(out);
+     //  j1.writeObject(jo);
+       // JsonReader jr1 = Json.createReader(in);//reading in json string
+        //JsonObject jObj = jr1.readObject();
+        //System.out.println(jObj.toString());
+       //jObj.get("data");
+        return questions();
     }
+    
+    
     
     /**
      * Logg of function to properly close sockets and etc
      * @throws IOException will be taken care in another method
      */
     public void LogOff() throws IOException{
+        
+        if(userID !=0 ){
         JsonObjectBuilder logOffBuild = Json.createObjectBuilder();
         
         logOffBuild.add("method", "logOff");
-                
-        
         JsonObject jo = logOffBuild.build();
         System.out.println();
-//        jw.writeObject(jo);
-//        JsonObject inObj = jr.readObject();
-//        if(inObj.getBoolean("logOut")){
-//////            jw.close();
-//////            jr.close();
-////            in.close();
-////            out.close();
-//            sock.close();
-////            System.out.println("here");
-////            
-//        }else
-//            System.out.println("error");
+        out.flush();
+        out.writeUTF(jo.toString());
+        JsonReader jr = Json.createReader(new StringReader(in.readUTF()));
+        JsonObject inObj = jr.readObject();
+        jr.close();
+        if(inObj.getBoolean("logOut")){
+            in.close();
+            out.close();
+            sock.close();
+//            System.out.println("here");            
+        }else
+            System.out.println("error");
+        }
     }
 
     /**
@@ -190,5 +215,47 @@ public class JsonCommunication
 
     public int getUserID() {
         return userID;
+    }
+    
+    ////////////////////////////////////////////////
+    
+    //reads questions from master file
+	private static EvalQuestions[] RetrieveQuestions(){
+            EvalQuestions questions[] = null;
+		ArrayList<EvalQuestions>inputq= null;
+		try (ObjectInputStream input
+                = new ObjectInputStream(new FileInputStream("test1.txt"))) {
+            inputq = (ArrayList<EvalQuestions>)input.readObject();
+            questions = inputq.toArray(new EvalQuestions[inputq.size()]);
+        } catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+                return questions;
+	}
+        private String questions(){
+        EvalQuestions [] questions;
+        EvalQuestions eq = new EvalQuestions();
+        Random rand = new Random(); 
+        int value = rand.nextInt(50);
+        questions= RetrieveQuestions();
+        String all = "";
+        String [] options= new String [5];
+        for(int i = 0; i< questions.length; i++){
+            all+= (i+1) + ". " + questions[i].getQuestion()+ '\n';
+            
+            options=questions[i].getOptions();
+            for(int j = 0; j< questions[i].getNumberOptions(); j++){
+             all += options[j] + ": "+ rand.nextInt(7) +"\n";   
+            }
+            all+= '\n';
+        }
+        return all;
     }
 }

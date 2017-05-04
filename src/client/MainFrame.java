@@ -34,7 +34,7 @@ public class MainFrame extends JFrame {
      * This method will add all the visual components to the Jframe
      */
     MainFrame() {
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             addWindowListener(new WindowAdapter() {//taken from stackOverflow
             @Override//link: http://stackoverflow.com/questions/15449022/show-prompt-before-closing-jframe
                 public void windowClosing(WindowEvent we)
@@ -96,8 +96,7 @@ public class MainFrame extends JFrame {
                 } else {
                     try {
                         ArrayList<Survey> income = jcom.loginInfo(Integer.parseInt(logWin.getId()));//sending userid to server to get verified
-                       // System.out.println(income.get(0));
-                        //
+                      //  System.out.println(jcom.getUserID());
                         switch (jcom.getRank()) {
                             case 0:
                                 //if user is rank 0 they are assumed to be a student and prompted to StudentSurvey view
@@ -111,7 +110,7 @@ public class MainFrame extends JFrame {
                             case 2:
                             case 3:
                                 //user will be prompted to FacultyCouseListView
-                                facView = new FacultyCourseListView(jcom.getRank(), income);
+                                facView = new FacultyCourseListView(jcom, income);
                                 mainPanel.add(facView, "facView");
                                 mainWindowLayout.show(mainPanel, "facView");
                                 break;
@@ -139,6 +138,7 @@ public class MainFrame extends JFrame {
      * closes window
      */
     void DisposeWindow(){
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.dispose();
     }
 

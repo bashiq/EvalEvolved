@@ -256,18 +256,18 @@ public class TakingSurvey extends JFrame {
             }
             
            // JsonArray jsonarr = loanArrayBuilder.build();
-            ultimateBuilder.add("method", "returnSurvey");
-            dataBuilder.add("courseID", courseID)
-                .add("surveyID", surveyID)
-                .add("choices",Arrays.toString(questions[0].getOptions()))
+            ultimateBuilder.add("method", "returnSurvey")
+                            .add("CID", courseID);
+            dataBuilder.add("surveyID", surveyID)
+                //.add("choices",Arrays.toString(questions[0].getOptions()))
                 .add("results", questionArrayBuilder);
             ultimateBuilder.add("data", dataBuilder);
             JsonObject ultimateOb = ultimateBuilder.build();
             //System.out.println(ultimateOb.toString());
             
-            JsonReader jr = Json.createReader(new StringReader(ultimateOb.toString()));
-                    JsonObject jsonObject = jr.readObject();
-            jr.close();
+            //JsonReader jr = Json.createReader(new StringReader(ultimateOb.toString()));
+              //      JsonObject jsonObject = jr.readObject();
+            //jr.close();
             
            
 //           JsonArray ja = jsonObject.getJsonArray("data");
