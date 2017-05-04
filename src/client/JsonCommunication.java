@@ -36,13 +36,13 @@ public class JsonCommunication
     private JsonReader jr = null;
     private JsonWriter jw= null;
     private int userID=0;
-    
+    private int courseID;
     /**
      * constructor will establish first with server
      */
     public JsonCommunication() {
         try {
-            sock = new Socket("localhost", 5143);//10.0.67.95", 5143);//10.0.67.95
+            sock = new Socket("10.0.67.95", 5143);//10.0.67.95
             
             in = new DataInputStream(sock.getInputStream());
 //               // DataInputStream methods = new DataInputStream(sock.getInputStream());
@@ -118,19 +118,26 @@ public class JsonCommunication
      */
     public ArrayList<Survey> StoreStuEvalResults(JsonObject input) throws IOException{
         //out.flush();
-        JsonWriter j1 = Json.createWriter(out);
+        //JsonWriter j1 = Json.createWriter(out);
        ArrayList<Survey> out1 = null;
         //send input
         //jw.writeObject(input);
        // recieve confirmation
         //System.out.println(input);
         
-       j1.writeObject(input);
+      // j1.writeObject(input);
+       
+       out.flush();
+        out.writeUTF(input.toString());
         System.out.println(input);
        //j1.close();
-       JsonReader jr1 = Json.createReader(in);//reading in json string
-        JsonObject jObj = jr1.readObject();
-        System.out.println("in "+jObj);
+       //JsonReader jr1 = Json.createReader(in);//reading in json string
+        //JsonObject jObj = jr1.readObject();
+        JsonReader jr = Json.createReader(new StringReader(in.readUTF()));
+        //System.out.println(jr);
+        JsonObject jObj = jr.readObject();
+        jr.close();
+        //System.out.println("in "+jObj);
         //jr1.close();
         System.out.println("status "+jObj.getBoolean("status"));
 //         JsonArray ja = jObj.getJsonArray("surveys");
@@ -145,7 +152,9 @@ public class JsonCommunication
         return null;
     }
     
-    
+    public void setCourseID(int c){
+        courseID = c;
+    }
     
     /**
      * Method is used to get course stats
@@ -154,11 +163,20 @@ public class JsonCommunication
      */
     public String CourseStats() throws IOException{
         JsonObjectBuilder loginBuild = Json.createObjectBuilder();
-        loginBuild.add("method", "courseStatView")
+        loginBuild.add("method", "stats")
                 .add("data", userID)
-                .add("courseID", "Ph202");//fix
+                .add("courseID", courseID);//fix
         
-        JsonObject jo = loginBuild.build();
+        //JsonObject jo = loginBuild.build();
+         //out.flush();
+        //out.writeUTF(jo.toString());
+       // System.out.println("sending "+jo.toString());
+        
+        //JsonReader jr = Json.createReader(new StringReader(in.readUTF()));
+        //System.out.println(jr);
+        //JsonObject jObj = jr.readObject();
+        //jr.close();
+        //System.out.println("stats" + jObj.toString());
        //JsonWriter j1 = Json.createWriter(out);
      //  j1.writeObject(jo);
        // JsonReader jr1 = Json.createReader(in);//reading in json string

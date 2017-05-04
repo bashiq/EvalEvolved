@@ -45,7 +45,7 @@ public class FacultyCourseListView extends JPanel {
     private int rank =3;
     private int permissions;
     private ComboListener cl;
-    private ArrayList <Survey> suveys;
+    private ArrayList <Survey> surveys;
     private JsonCommunication jcom;
     
 /**
@@ -155,11 +155,11 @@ public class FacultyCourseListView extends JPanel {
     }
     
     public void SetSurveyList(ArrayList<Survey> surveyList) {
-        this.suveys = surveyList;
-       coursearr = new String [2];
+        this.surveys = surveyList;
+       coursearr = new String [surveyList.size()];
        
-        for(int i = 0; i < 2; i++){
-           coursearr[i] = "bat";//surveyList.get(i).getCourse();
+        for(int i = 0; i < surveyList.size(); i++){
+           coursearr[i] = surveyList.get(i).getCourse();
         }
     }
 
@@ -259,6 +259,7 @@ public class FacultyCourseListView extends JPanel {
             if (e.getValueIsAdjusting()) {
                 //System.out.println("Selected: "+coursearr [selected]);
                 chosen = coursearr[selected];
+              jcom.setCourseID(surveys.get(selected).getCID());
             }
         }
     }

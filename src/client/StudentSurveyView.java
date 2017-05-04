@@ -157,7 +157,7 @@ public class StudentSurveyView extends JPanel{
                     Logger.getLogger(StudentSurveyView.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 if(incoming == null){//if null that may mean it wasnt successful
-                    JOptionPane.showMessageDialog (null, "success or failure",
+                    JOptionPane.showMessageDialog (null, "Success",
             		"YEAH", JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }
